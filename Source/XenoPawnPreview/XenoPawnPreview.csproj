@@ -90,11 +90,17 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Copy files to Rimworld/Mods when build succeeds. -->
   <PropertyGroup>
-    <TargetDir>$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath'))\steamapps\common\Rimworld\Mods\</TargetDir>
-    <!-- F:\Steam\steamapps\common\RimWorld\Mods\ -->
+    <TargetDir>$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath'))\steamapps\common\Rimworld\Mods\</TargetDir>    
   </PropertyGroup>
   <ItemGroup>
-    <ReleaseFiles Include="$(SolutionDir)..\**\*.*" Exclude="$(SolutionDir)..\Source\**\*.*" Visible="false" />
+    <ReleaseFiles
+			Include="$(SolutionDir)..\**\*.*"
+			
+			Exclude="$(SolutionDir)..\Source\**\*.*;
+			         $(SolutionDir)..\.git\**\*.*;
+			         $(SolutionDIr)..\.git*"
+			
+			Visible="false" />
   </ItemGroup>
   <Target Name="CopyToOutput" AfterTargets="Build">
     <Message Text="Copying output to '$(TargetDir)'" Importance="high" />
