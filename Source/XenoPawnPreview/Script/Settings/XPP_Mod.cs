@@ -41,6 +41,8 @@ namespace Karda.XenoPawnPreview
 		public XPP_Mod(ModContentPack content)
 			: base(content)
 		{
+			modSettings = this.GetSettings<XPP_Settings>();
+
 			Harmony harmony = new Harmony(ModID);
 
 			if (XPPContentPack == null)
@@ -63,8 +65,6 @@ namespace Karda.XenoPawnPreview
 					original: AccessTools.Method(CompatibilityUtility.IdeoFactIcon_Assembly.GetType("nuff.Ideology_Faction_Icon.HarmonyPatches"), "Get_FactionIcon_Helper"),
 					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(CompatibilityUtility.IdeoFactIcon_SkipComponentQuery)));
 			}
-
-			modSettings = this.GetSettings<XPP_Settings>();
 
 			Log.Message($"✓ - {ModName} loaded successfully.");
 		}
