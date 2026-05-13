@@ -4,7 +4,6 @@ namespace Karda.XenoPawnPreview
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Data.SqlTypes;
 	using System.Linq;
 	using RimWorld;
 	using UnityEngine;
@@ -178,7 +177,7 @@ namespace Karda.XenoPawnPreview
 		/// <param name="doCloseSound">If <see langword="true"/>, the closing sound will be played when this <see cref="Window"/> is closed.</param>
 		public override void Close(bool doCloseSound = true)
 		{
-			this.pawn?.Destroy();
+			this.PawnDestroy();
 
 			HarmonyPatches_Core.GenesChanged -= this.OnGenesChanged;
 
@@ -617,13 +616,36 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <summary>
+		/// Destroys and cleans up the currently active <see cref="Pawn"/>.
+		/// </summary>
+		protected virtual void PawnDestroy()
+		{
+			if (this.pawn != null)
+			{
+				if (this.pawn.Spawned)
+				{
+					this.pawn.DeSpawn();
+				}
+				else
+				{
+					this.pawn.Destroy();
+				}
+
+				Find.World?.worldPawns.RemoveAndDiscardPawnViaGC(this.pawn);
+			}
+
+			this.pawn = null;
+
+			this.refreshRequired = true;
+		}
+
+		/// <summary>
 		/// Attempts to generate a new <see cref="Pawn"/> and apply it as the target of this <see cref="PreviewWindow"/>.
 		/// </summary>
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
 		protected virtual bool PawnGenerate()
 		{
-			this.pawn?.Destroy();
-			this.pawn = null;
+			this.PawnDestroy();
 
 			if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
 			{
@@ -650,8 +672,7 @@ namespace Karda.XenoPawnPreview
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
 		protected virtual bool PawnRegenerate()
 		{
-			this.pawn?.Destroy();
-			this.pawn = null;
+			this.PawnDestroy();
 
 			if (HarmonyPatches_Core.OriginalPawn == null)
 			{
