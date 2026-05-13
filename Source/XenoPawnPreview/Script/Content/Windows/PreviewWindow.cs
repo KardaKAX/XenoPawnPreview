@@ -445,24 +445,30 @@ namespace Karda.XenoPawnPreview
 
 			this.rectNeeds.y += MarginSectionTitle + MarginSmall;
 
-			foreach (var need in this.pawn.needs.AllNeeds.Where(x => x.ShowOnNeedList || x is Need_Mood))
+			try
 			{
-				this.rectNeeds.xMin += MarginSmall;
+				foreach (var need in this.pawn.needs.AllNeeds.Where(x => x.ShowOnNeedList || x is Need_Mood))
+				{
+					this.rectNeeds.xMin += MarginSmall;
 
-				Text.Anchor = TextAnchor.MiddleLeft;
-				Widgets.Label(this.rectNeeds, need.LabelCap);
-				Text.Anchor = TextAnchor.UpperLeft;
+					Text.Anchor = TextAnchor.MiddleLeft;
+					Widgets.Label(this.rectNeeds, need.LabelCap);
+					Text.Anchor = TextAnchor.UpperLeft;
 
-				this.needsLabelMaxX = Mathf.Max(this.needsLabelMaxX, Text.CalcSize(need.LabelCap).x + MarginSmall);
-				this.rectNeeds.xMin += this.needsLabelMaxX;
-				this.rectNeeds.xMax -= MarginSmall;
+					this.needsLabelMaxX = Mathf.Max(this.needsLabelMaxX, Text.CalcSize(need.LabelCap).x + MarginSmall);
+					this.rectNeeds.xMin += this.needsLabelMaxX;
+					this.rectNeeds.xMax -= MarginSmall;
 
-				need.DrawOnGUI(rect: this.rectNeeds, customMargin: 0f, drawArrows: false, drawLabel: false);
+					need.DrawOnGUI(rect: this.rectNeeds, customMargin: 0f, drawArrows: false, drawLabel: false);
 
-				this.rectNeeds.x = tmpX;
-				this.rectNeeds.y += MarginSectionTitle;
-				this.rectNeeds.width = tmpWidth;
-				this.rectNeeds.height = MarginSectionTitle;
+					this.rectNeeds.x = tmpX;
+					this.rectNeeds.y += MarginSectionTitle;
+					this.rectNeeds.width = tmpWidth;
+					this.rectNeeds.height = MarginSectionTitle;
+				}
+			}
+			catch (Exception) // For some reason, a NRE started being thrown when the window is closed, so this tells it to shut up.
+			{
 			}
 		}
 
