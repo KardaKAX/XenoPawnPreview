@@ -617,6 +617,7 @@ namespace Karda.XenoPawnPreview
 		protected virtual bool PawnGenerate()
 		{
 			this.pawn?.Destroy();
+			this.pawn = null;
 
 			if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
 			{
@@ -644,8 +645,13 @@ namespace Karda.XenoPawnPreview
 		protected virtual bool PawnRegenerate()
 		{
 			this.pawn?.Destroy();
+			this.pawn = null;
 
-			if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
+			if (HarmonyPatches_Core.OriginalPawn == null)
+			{
+				this.PawnGenerate();
+			}
+			else if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
 			{
 				this.pawn = PawnUtility.GenerateMinimalPawn();
 			}

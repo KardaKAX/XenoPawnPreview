@@ -77,7 +77,7 @@ namespace Karda.XenoPawnPreview
 				if (__instance is Dialog_CreateXenotype || __instance is Dialog_CreateXenogerm)
 				{
 					/// Ideo editor returns null
-					OriginalPawn = Find.GameInitData.startingAndOptionalPawns[Traverse.Create(__instance).Field("generationRequestIndex").GetValue<int>()];
+					OriginalPawn = Find.GameInitData.startingAndOptionalPawns.ElementAtOrDefault(Traverse.Create(__instance).Field("generationRequestIndex").GetValue<int>());
 				}
 				else if (Type.GetType("CharacterEditor.DialogXenoType, CharacterEditor")?.IsAssignableFrom(__instance.GetType()) ?? false)
 				{
