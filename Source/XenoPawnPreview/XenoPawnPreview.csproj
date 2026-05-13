@@ -44,10 +44,6 @@
       <HintPath>..\..\..\..\..\Steam\steamapps\workshop\content\294100\2925432336\1.6\Base\Assemblies\BigAndSmall.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="IdeoFactIcon">
-      <HintPath>..\..\..\..\..\Steam\steamapps\workshop\content\294100\2923530869\1.6\Assemblies\IdeoFactIcon.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -90,17 +86,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Copy files to Rimworld/Mods when build succeeds. -->
   <PropertyGroup>
-    <TargetDir>$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath'))\steamapps\common\Rimworld\Mods\</TargetDir>    
+    <TargetDir>$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath'))\steamapps\common\Rimworld\Mods\</TargetDir>
   </PropertyGroup>
   <ItemGroup>
-    <ReleaseFiles
-			Include="$(SolutionDir)..\**\*.*"
-			
-			Exclude="$(SolutionDir)..\Source\**\*.*;
-			         $(SolutionDir)..\.git\**\*.*;
-			         $(SolutionDIr)..\.git*"
-			
-			Visible="false" />
+    <ReleaseFiles Include="$(SolutionDir)..\**\*.*" Exclude="$(SolutionDir)..\Source\**\*.*;&#xD;&#xA;			         $(SolutionDir)..\.git\**\*.*;&#xD;&#xA;			         $(SolutionDIr)..\.git*" Visible="false" />
   </ItemGroup>
   <Target Name="CopyToOutput" AfterTargets="Build">
     <Message Text="Copying output to '$(TargetDir)'" Importance="high" />

@@ -40,7 +40,7 @@ namespace Karda.XenoPawnPreview
 		/// <param name="__result">The original result of the targeted method.</param>
 		/// <param name="pawn">The <see cref="Pawn"/> target of this method.</param>
 		/// <returns><see langword="true"/> if the original method is to be executed.</returns>
-		public static bool BigAndSmall_AllowCachingOnEntry(ref BSCache __result, Pawn pawn)
+		public static bool BigAndSmall_AllowCachingOnEntry(ref object __result, Pawn pawn)
 		{
 			if (Find.UIRoot is UIRoot_Entry)
 			{
