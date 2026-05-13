@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
+	<!-- Generic Strings -->
+	<Karda.XPP.Generic.Reset.Label>Reset</Karda.XPP.Generic.Reset.Label>
+	
 	<!-- Settings -->
+	<Karda.XPP.Settings.Patch.Category>Patch Settings</Karda.XPP.Settings.Patch.Category>
 	<Karda.XPP.Settings.Patch.BigAndSmall.Label>Patch Big and Small</Karda.XPP.Settings.Patch.BigAndSmall.Label>
 	<Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>Toggle patching Big and Small compatibility with this mod.</Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>
 	<Karda.XPP.Settings.Patch.IdeoFactIcon.Label>Patch Ideoligion Icon as Faction Icon</Karda.XPP.Settings.Patch.IdeoFactIcon.Label>
 	<Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>Toggle patching Ideoligion Icon as Faction Icon compatibility with this mod.</Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>
+	<Karda.XPP.Settings.Window.Category>Window Settings</Karda.XPP.Settings.Window.Category>
+	<Karda.XPP.Settings.Window.OffsetX.Label>Horizontal window offset</Karda.XPP.Settings.Window.OffsetX.Label>
+	<Karda.XPP.Settings.Window.OffsetY.Label>Vertical window offset</Karda.XPP.Settings.Window.OffsetY.Label>
+	<Karda.XPP.Settings.Window.Offset.Tooltip>Sets the positional offset of the xenotype and preview windows.</Karda.XPP.Settings.Window.Offset.Tooltip>
 	<Karda.XPP.Settings.Window.Standalone.Label>Toggle standalone window</Karda.XPP.Settings.Window.Standalone.Label>
 	<Karda.XPP.Settings.Window.Standalone.Tooltip>When enabled, the preview window will be movable and not constrained to the right side of the gene picker window.</Karda.XPP.Settings.Window.Standalone.Tooltip>
 	

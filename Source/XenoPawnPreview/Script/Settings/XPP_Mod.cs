@@ -87,7 +87,18 @@ namespace Karda.XenoPawnPreview
 		{
 			SettingsListing.Begin(inRect);
 
+			SettingsListing.Label("Karda.XPP.Settings.Window.Category".Translate());
 			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Window.Standalone.Label".Translate(), ref ModSettings.WindowStandalone, "Karda.XPP.Settings.Window.Standalone.Tooltip".Translate());
+			ModSettings.WindowOffset.x = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.OffsetX.Label".Translate()}: {ModSettings.WindowOffset.x:F0}px", ModSettings.WindowOffset.x, -Screen.width, Screen.width, tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
+			ModSettings.WindowOffset.y = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.OffsetY.Label".Translate()}: {ModSettings.WindowOffset.y:F0}px", ModSettings.WindowOffset.y, -Screen.height, Screen.height, tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
+
+			if (SettingsListing.ButtonText("Karda.XPP.Generic.Reset.Label".Translate()))
+			{
+				ModSettings.WindowOffset = XPP_Settings.WindowOffsetDefault;
+			}
+
+			SettingsListing.Label(string.Empty);
+			SettingsListing.Label("Karda.XPP.Settings.Patch.Category".Translate());
 			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.BigAndSmall.Label".Translate(), ref ModSettings.PatchBigAndSmall, "Karda.XPP.Settings.Patch.BigAndSmall.Tooltip".Translate());
 			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.IdeoFactIcon.Label".Translate(), ref ModSettings.PatchIdeoFactIcon, "Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip".Translate());
 

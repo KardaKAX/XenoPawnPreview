@@ -11,6 +11,11 @@ namespace Karda.XenoPawnPreview
 	/// </summary>
 	public class XPP_Settings : ModSettings
 	{
+		/// <summary>
+		/// Defines the default window offset for the editor.
+		/// </summary>
+		public static readonly Vector2 WindowOffsetDefault = new Vector2(-256f, 0f);
+
 #pragma warning disable SA1401
 		/// <summary>
 		/// Determines if this mod should patch compatibility with <b>Big and Small</b>.
@@ -28,6 +33,11 @@ namespace Karda.XenoPawnPreview
 		//public bool PawnGenerateMinimal = false;
 
 		/// <summary>
+		/// Offsets the <see cref="GeneCreationDialogBase"/> by the given value on the horizontal axis.
+		/// </summary>
+		public Vector2 WindowOffset = WindowOffsetDefault;
+
+		/// <summary>
 		/// Determines if the <see cref="PreviewWindow"/> should not be constrained to any <see cref="GeneCreationDialogBase"/>.
 		/// </summary>
 		public bool WindowStandalone = false;
@@ -41,6 +51,7 @@ namespace Karda.XenoPawnPreview
 			Scribe_Values.Look(ref this.PatchBigAndSmall, "PatchBigAndSmall");
 			Scribe_Values.Look(ref this.PatchIdeoFactIcon, "PatchIdeoFactIcon");
 			//Scribe_Values.Look(ref this.PawnGenerateMinimal, "PawnGenerateMinimal");
+			Scribe_Values.Look(ref this.WindowOffset, "WindowOffset");
 			Scribe_Values.Look(ref this.WindowStandalone, "WindowStandalone");
 		}
 	}

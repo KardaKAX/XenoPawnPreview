@@ -141,7 +141,9 @@ namespace Karda.XenoPawnPreview
 		/// <param name="inRect">The bounds of the <see cref="Window"/>.</param>
 		public override void DoWindowContents(Rect inRect)
 		{
-			// Set window transform.
+			// Set window transforms.
+			this.baseWindow.windowRect.position = HarmonyPatches_Core.OriginalWindowPosition + XPP_Mod.ModSettings.WindowOffset;
+
 			if (!XPP_Mod.ModSettings.WindowStandalone)
 			{
 				this.windowRect.x = this.baseWindow.windowRect.xMax + MarginLarge;

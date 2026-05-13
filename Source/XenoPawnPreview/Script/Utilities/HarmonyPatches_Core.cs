@@ -7,6 +7,7 @@ namespace Karda.XenoPawnPreview
 	using System.Linq;
 	using HarmonyLib;
 	using RimWorld;
+	using UnityEngine;
 	using Verse;
 
 	/// <summary>
@@ -31,6 +32,11 @@ namespace Karda.XenoPawnPreview
 		/// Gets the <see cref="Pawn"/> being targeted by this editor window.
 		/// </summary>
 		public static Pawn OriginalPawn { get; private set; }
+
+		/// <summary>
+		/// Gets the original <see cref="Rect.position"/> of the displayed <see cref="GeneCreationDialogBase"/> <see cref="Window"/>.
+		/// </summary>
+		public static Vector2 OriginalWindowPosition { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the current <see cref="XenoPawnPreview.PreviewWindow"/> instance.
@@ -73,6 +79,7 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase gcdbInstance)
 			{
 				__instance.absorbInputAroundWindow = false;
+				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				if (__instance is Dialog_CreateXenotype || __instance is Dialog_CreateXenogerm)
 				{
