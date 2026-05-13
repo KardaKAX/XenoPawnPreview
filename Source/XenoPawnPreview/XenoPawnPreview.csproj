@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6BC151A2-0BE5-4F4E-B4E9-F829055A7A4E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Karda.XenoPawnPreview</RootNamespace>
+    <AssemblyName>XenoPawnPreview</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\1.6\Assemblies\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\..\..\..\..\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BigAndSmall">
+      <HintPath>..\..\..\..\..\Steam\steamapps\workshop\content\294100\2925432336\1.6\Base\Assemblies\BigAndSmall.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IdeoFactIcon">
+      <HintPath>..\..\..\..\..\Steam\steamapps\workshop\content\294100\2923530869\1.6\Assemblies\IdeoFactIcon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Script\Utilities\PawnUtility.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Script\Content\Windows\PreviewWindow.cs" />
+    <Compile Include="Script\Content\Widgets\WindowButtonSmall.cs" />
+    <Compile Include="Script\Utilities\CompatibilityUtility.cs" />
+    <Compile Include="Script\Utilities\HarmonyPatches_Core.cs" />
+    <Compile Include="Script\Settings\XPP_Mod.cs" />
+    <Compile Include="Script\Settings\XPP_Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Copy files to Rimworld/Mods when build succeeds. -->
+  <PropertyGroup>
+    <TargetDir>$([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath'))\steamapps\common\Rimworld\Mods\</TargetDir>
+    <!-- F:\Steam\steamapps\common\RimWorld\Mods\ -->
+  </PropertyGroup>
+  <ItemGroup>
+    <ReleaseFiles Include="$(SolutionDir)..\**\*.*" Exclude="$(SolutionDir)..\Source\**\*.*" Visible="false" />
+  </ItemGroup>
+  <Target Name="CopyToOutput" AfterTargets="Build">
+    <Message Text="Copying output to '$(TargetDir)'" Importance="high" />
+    <Error Condition="!Exists('$(TargetDir)')" Text="Could not find directory: '$(TargetDir)'" />
+    <Copy SourceFiles="@(ReleaseFiles)" DestinationFolder="$(TargetDir)\$(SolutionName)\%(RecursiveDir)" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)')" />
+    <Message Text="Copied files to destination." Importance="high" />
+  </Target>
+</Project>

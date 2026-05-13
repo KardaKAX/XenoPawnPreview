@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<!-- Settings -->
+	<Karda.XPP.Settings.Patch.BigAndSmall.Label>Patch Big and Small</Karda.XPP.Settings.Patch.BigAndSmall.Label>
+	<Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>Toggle patching Big and Small compatibility with this mod.</Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>
+	<Karda.XPP.Settings.Patch.IdeoFactIcon.Label>Patch Ideoligion Icon as Faction Icon</Karda.XPP.Settings.Patch.IdeoFactIcon.Label>
+	<Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>Toggle patching Ideoligion Icon as Faction Icon compatibility with this mod.</Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>
+	<Karda.XPP.Settings.Window.Standalone.Label>Toggle standalone window</Karda.XPP.Settings.Window.Standalone.Label>
+	<Karda.XPP.Settings.Window.Standalone.Tooltip>When enabled, the preview window will be movable and not constrained to the right side of the gene picker window.</Karda.XPP.Settings.Window.Standalone.Tooltip>
+	
+	<!-- Controller -->
+	<Karda.XPP.Controller.Settings.Button>Open the mod settings window.</Karda.XPP.Controller.Settings.Button>
+	<Karda.XPP.Controller.Pawn.Button.New>Create a new Pawn.</Karda.XPP.Controller.Pawn.Button.New>
+	<Karda.XPP.Controller.Pawn.Button.Recycle>Clear all information from this Pawn.</Karda.XPP.Controller.Pawn.Button.Recycle>
+	<Karda.XPP.Controller.Pawn.Button.Infocard>Open detailed information about this Pawn.</Karda.XPP.Controller.Pawn.Button.Infocard>
+	
+	<!-- Render -->
+	<Karda.XPP.Render.Rotate.Button.Tooltip>Rotate the Pawn preview image.</Karda.XPP.Render.Rotate.Button.Tooltip>
+	<Karda.XPP.Render.Zoom.Slider.Label>Zoom</Karda.XPP.Render.Zoom.Slider.Label>
+	<Karda.XPP.Render.Zoom.Slider.Tooltip>Set the camera zoom on the preview.</Karda.XPP.Render.Zoom.Slider.Tooltip>
+  
+  <!-- Backstories -->
+	<Karda.XPP.Pawn.Backstory.None.Desc>[PAWN_nameDef] has no backstory.</Karda.XPP.Pawn.Backstory.None.Desc>
+	<Karda.XPP.Pawn.Backstory.None.Name>No Backstory</Karda.XPP.Pawn.Backstory.None.Name>
+	
+</LanguageData>

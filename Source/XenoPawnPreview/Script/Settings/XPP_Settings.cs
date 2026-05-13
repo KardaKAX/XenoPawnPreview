@@ -1,0 +1,47 @@
+﻿// Copyright KardaKAX - GNU GPLv3.
+
+namespace Karda.XenoPawnPreview
+{
+	using RimWorld;
+	using UnityEngine;
+	using Verse;
+
+	/// <summary>
+	/// Stores and handles settings for the mod.
+	/// </summary>
+	public class XPP_Settings : ModSettings
+	{
+#pragma warning disable SA1401
+		/// <summary>
+		/// Determines if this mod should patch compatibility with <b>Big and Small</b>.
+		/// </summary>
+		public bool PatchBigAndSmall = true;
+
+		/// <summary>
+		/// Determines if this mod should patch compatibility with <b>Ideoligon Icon as Faction Icon</b>.
+		/// </summary>
+		public bool PatchIdeoFactIcon = true;
+
+		/// <summary>
+		/// Determines if the mod should always generate a 'minimal' pawn.
+		/// </summary>
+		//public bool PawnGenerateMinimal = false;
+
+		/// <summary>
+		/// Determines if the <see cref="PreviewWindow"/> should not be constrained to any <see cref="GeneCreationDialogBase"/>.
+		/// </summary>
+		public bool WindowStandalone = false;
+#pragma warning restore SA1401
+
+		/// <summary>
+		/// Exposes data from the scribe for reading saved mod data.
+		/// </summary>
+		public override void ExposeData()
+		{
+			Scribe_Values.Look(ref this.PatchBigAndSmall, "PatchBigAndSmall");
+			Scribe_Values.Look(ref this.PatchIdeoFactIcon, "PatchIdeoFactIcon");
+			//Scribe_Values.Look(ref this.PawnGenerateMinimal, "PawnGenerateMinimal");
+			Scribe_Values.Look(ref this.WindowStandalone, "WindowStandalone");
+		}
+	}
+}

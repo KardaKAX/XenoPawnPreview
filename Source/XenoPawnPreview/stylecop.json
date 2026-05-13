@@ -1,0 +1,16 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "KardaKAX",
+      "copyrightText": "Copyright {companyName} - {licenseName}.",
+      "variables": {
+        "licenseName": "GNU GPLv3"
+      },
+      "xmlHeader": false
+    },
+    "indentation": {
+      "useTabs": true
+    }
+  }
+}
