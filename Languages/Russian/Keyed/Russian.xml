@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	<!-- Generic Strings -->
+	<Karda.XPP.Generic.Reset.Label>Сбросить</Karda.XPP.Generic.Reset.Label>
+	
+	<!-- Settings -->
+	<Karda.XPP.Settings.Patch.Category>Настройки патчей</Karda.XPP.Settings.Patch.Category>
+	<Karda.XPP.Settings.Patch.BigAndSmall.Label>Патч для Big and Small</Karda.XPP.Settings.Patch.BigAndSmall.Label>
+	<Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>Включить/выключить патч совместимости с модом Big and Small.</Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>
+	<Karda.XPP.Settings.Patch.IdeoFactIcon.Label>Иконка идеологии как иконка фракции</Karda.XPP.Settings.Patch.IdeoFactIcon.Label>
+	<Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>Включить/выключить патч совместимости, отображающий иконку идеологии в качестве иконки фракции.</Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>
+	<Karda.XPP.Settings.Window.Category>Настройки окна</Karda.XPP.Settings.Window.Category>
+	<Karda.XPP.Settings.Window.OffsetX.Label>Смещение окна по горизонтали</Karda.XPP.Settings.Window.OffsetX.Label>
+	<Karda.XPP.Settings.Window.OffsetY.Label>Смещение окна по вертикали</Karda.XPP.Settings.Window.OffsetY.Label>
+	<Karda.XPP.Settings.Window.Offset.Tooltip>Задает смещение положения окон ксенотипа и предварительного просмотра.</Karda.XPP.Settings.Window.Offset.Tooltip>
+	<Karda.XPP.Settings.Window.Standalone.Label>Отдельное окно</Karda.XPP.Settings.Window.Standalone.Label>
+	<Karda.XPP.Settings.Window.Standalone.Tooltip>Если включено, окно предпросмотра можно будет перемещать, и оно не будет привязано к правой стороне окна выбора генов.</Karda.XPP.Settings.Window.Standalone.Tooltip>
+	
+	<!-- Controller -->
+	<Karda.XPP.Controller.Settings.Button>Открыть окно настроек мода.</Karda.XPP.Controller.Settings.Button>
+	<Karda.XPP.Controller.Pawn.Button.New>Создать новую пешку.</Karda.XPP.Controller.Pawn.Button.New>
+	<Karda.XPP.Controller.Pawn.Button.Recycle>Очистить всю информацию об этой пешке.</Karda.XPP.Controller.Pawn.Button.Recycle>
+	<Karda.XPP.Controller.Pawn.Button.Infocard>Открыть подробную информацию об этой пешке.</Karda.XPP.Controller.Pawn.Button.Infocard>
+	
+	<!-- Render -->
+	<Karda.XPP.Render.Rotate.Button.Tooltip>Повернуть изображение предпросмотра пешки.</Karda.XPP.Render.Rotate.Button.Tooltip>
+	<Karda.XPP.Render.Zoom.Slider.Label>Масштаб</Karda.XPP.Render.Zoom.Slider.Label>
+	<Karda.XPP.Render.Zoom.Slider.Tooltip>Установить масштаб камеры в окне предпросмотра.</Karda.XPP.Render.Zoom.Slider.Tooltip>
+  
+  <!-- Backstories -->
+	<Karda.XPP.Pawn.Backstory.None.Desc>У пешки [PAWN_nameDef] нет биографии.</Karda.XPP.Pawn.Backstory.None.Desc>
+	<Karda.XPP.Pawn.Backstory.None.Name>Без биографии</Karda.XPP.Pawn.Backstory.None.Name>
+	
+</LanguageData>
