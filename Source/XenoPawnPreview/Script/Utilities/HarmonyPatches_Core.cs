@@ -7,6 +7,7 @@ namespace Karda.XenoPawnPreview
 	using System.Linq;
 	using HarmonyLib;
 	using RimWorld;
+	using RimWorld.Planet;
 	using UnityEngine;
 	using Verse;
 
@@ -44,6 +45,11 @@ namespace Karda.XenoPawnPreview
 		private static PreviewWindow PreviewWindow { get; set; }
 
 		/// <summary>
+		/// Gets or sets a value indicating whether a world was created in the process of opening the preview window.
+		/// </summary>
+		private static bool CreatedWorld { get; set; }
+
+		/// <summary>
 		/// Postfixes the <see cref="Dialog_CreateXenotype.OnGenesChanged"/> method to register updates when the player changes genes.
 		/// </summary>
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
@@ -65,6 +71,14 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase)
 			{
 				PreviewWindow?.Close(false);
+
+				if (CreatedWorld)
+				{
+					Current.Game = null;
+					Find.GameInitData?.startingAndOptionalPawns.Clear();
+
+					Log.Message("[XPP] Cleared the temporary world.");
+				}
 			}
 		}
 
@@ -81,9 +95,43 @@ namespace Karda.XenoPawnPreview
 				__instance.absorbInputAroundWindow = false;
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
+				// Create a temporary world if one doesn't exist.
+				if (Find.GameInitData == null && Current.ProgramState == ProgramState.Entry)
+				{
+					Current.Game = new Game();
+					Current.Game.InitData = new GameInitData()
+					{
+						startingPawnCount = 1,
+					};
+
+					Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+					Find.Scenario.PreConfigure();
+
+					Current.Game.storyteller = new Storyteller()
+					{
+						def = StorytellerDefOf.Cassandra,
+						difficultyDef = DifficultyDefOf.Rough,
+					};
+
+					Current.Game.World = WorldGenerator.GenerateWorld(
+						planetCoverage: 0.05f,
+						seedString: "0",
+						overallRainfall: OverallRainfall.Normal,
+						overallTemperature: OverallTemperature.Normal,
+						population: OverallPopulation.Normal,
+						landmarkDensity: LandmarkDensity.Normal,
+						factions: new List<FactionDef>
+						{
+							FactionDefOf.PlayerColony,
+						});
+					Find.GameInitData.startingTile = TileFinder.RandomStartingTile();
+
+					Log.Message("[XPP] Created a temporary world");
+					CreatedWorld = true;
+				}
+
 				if (__instance is Dialog_CreateXenotype || __instance is Dialog_CreateXenogerm)
 				{
-					/// Ideo editor returns null
 					OriginalPawn = Find.GameInitData.startingAndOptionalPawns.ElementAtOrDefault(Traverse.Create(__instance).Field("generationRequestIndex").GetValue<int>());
 				}
 				else if (Type.GetType("CharacterEditor.DialogXenoType, CharacterEditor")?.IsAssignableFrom(__instance.GetType()) ?? false)
