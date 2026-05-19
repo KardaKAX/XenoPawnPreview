@@ -183,7 +183,7 @@ namespace Karda.XenoPawnPreview
 		{
 			this.PawnDestroy();
 
-			HarmonyPatches_Core.GenesChanged -= this.OnGenesChanged;
+			HarmonyPatches_Core.GenesChanged -= this.UpdateGenes;
 
 			base.Close(doCloseSound);
 		}
@@ -211,9 +211,34 @@ namespace Karda.XenoPawnPreview
 
 			this.refreshRequired = true;
 
-			HarmonyPatches_Core.GenesChanged += this.OnGenesChanged;
+			HarmonyPatches_Core.GenesChanged += this.UpdateGenes;
 
 			base.PostOpen();
+		}
+
+		/// <summary>
+		/// Notifies the preview window that the current genes should be re-applied to the target <see cref="Pawn"/>.
+		/// </summary>
+		public void UpdateGenes() => this.UpdateGenes(HarmonyPatches_Core.CurrentGenes);
+
+		/// <summary>
+		/// Notifies the preview window that the <paramref name="newGenes"/> should be applied to the target <see cref="Pawn"/>.
+		/// </summary>
+		/// <param name="newGenes">The genes being applied to the <see cref="Pawn"/>.</param>
+		public virtual void UpdateGenes(List<GeneDefWithType> newGenes)
+		{
+			foreach (var oldGene in this.pawn.genes.GenesListForReading)
+			{
+				this.pawn.genes.RemoveGene(oldGene);
+				this.pawn.story.traits.Notify_GeneRemoved(oldGene);
+			}
+
+			foreach (var newGene in newGenes)
+			{
+				this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+			}
+
+			this.refreshRequired = true;
 		}
 
 		/// <summary>
@@ -615,6 +640,7 @@ namespace Karda.XenoPawnPreview
 		protected virtual void PawnClear()
 		{
 			this.pawn.ClearData();
+			this.UpdateGenes();
 
 			this.refreshRequired = true;
 		}
@@ -663,7 +689,7 @@ namespace Karda.XenoPawnPreview
 				this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
 			}
 
-			HarmonyPatches_Core.GeneCreationDialogBase_OnGenesChanged(this.baseWindow);
+			this.UpdateGenes();
 			this.refreshRequired = true;
 
 			return this.pawn != null;
@@ -693,30 +719,10 @@ namespace Karda.XenoPawnPreview
 				this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
 			}
 
-			HarmonyPatches_Core.GeneCreationDialogBase_OnGenesChanged(this.baseWindow);
+			this.UpdateGenes();
 			this.refreshRequired = true;
 
 			return this.pawn != null;
-		}
-
-		/// <summary>
-		/// Handles invocations of the <see cref="HarmonyPatches_Core.GenesChanged"/> event.
-		/// </summary>
-		/// <param name="newGenes">The genes being applied to the <see cref="Pawn"/>.</param>
-		protected virtual void OnGenesChanged(List<GeneDefWithType> newGenes)
-		{
-			foreach (var oldGene in this.pawn.genes.GenesListForReading)
-			{
-				this.pawn.genes.RemoveGene(oldGene);
-				this.pawn.story.traits.Notify_GeneRemoved(oldGene);
-			}
-
-			foreach (var newGene in newGenes)
-			{
-				this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
-			}
-
-			this.refreshRequired = true;
 		}
 
 		/// <summary>

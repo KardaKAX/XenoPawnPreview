@@ -35,14 +35,19 @@ namespace Karda.XenoPawnPreview
 		public static Pawn OriginalPawn { get; private set; }
 
 		/// <summary>
+		/// Gets the genes present on the current target <see cref="Pawn"/>.
+		/// </summary>
+		public static List<GeneDefWithType> CurrentGenes
+		{
+			get => TargetWindow != null
+				? Traverse.Create(TargetWindow).Field("tmpGenesWithType").GetValue<List<GeneDefWithType>>().Distinct().ToList()
+				: new List<GeneDefWithType>();
+		}
+
+		/// <summary>
 		/// Gets the original <see cref="Rect.position"/> of the displayed <see cref="GeneCreationDialogBase"/> <see cref="Window"/>.
 		/// </summary>
 		public static Vector2 OriginalWindowPosition { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the current <see cref="XenoPawnPreview.PreviewWindow"/> instance.
-		/// </summary>
-		private static PreviewWindow PreviewWindow { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether a world was created in the process of opening the preview window.
@@ -50,15 +55,22 @@ namespace Karda.XenoPawnPreview
 		private static bool CreatedWorld { get; set; }
 
 		/// <summary>
+		/// Gets or sets the current <see cref="XenoPawnPreview.PreviewWindow"/> instance.
+		/// </summary>
+		private static PreviewWindow PreviewWindow { get; set; }
+
+		/// <summary>
+		/// Gets or sets the currently targeted <see cref="GeneCreationDialogBase"/> window.
+		/// </summary>
+		private static GeneCreationDialogBase TargetWindow { get; set; }
+
+		/// <summary>
 		/// Postfixes the <see cref="Dialog_CreateXenotype.OnGenesChanged"/> method to register updates when the player changes genes.
 		/// </summary>
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(GeneCreationDialogBase), "OnGenesChanged")]
-		public static void GeneCreationDialogBase_OnGenesChanged(GeneCreationDialogBase __instance)
-		{
-			GenesChanged?.Invoke(Traverse.Create(__instance).Field("tmpGenesWithType").GetValue<List<GeneDefWithType>>().Distinct().ToList());
-		}
+		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(CurrentGenes);
 
 		/// <summary>
 		/// Patches the <see cref="Window.Close(bool)"/> method to also close the <see cref="XenoPawnPreview.PreviewWindow"/> alongside any opened <see cref="GeneCreationDialogBase"/>.
@@ -71,6 +83,7 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase)
 			{
 				PreviewWindow?.Close(false);
+				TargetWindow = null;
 
 				if (CreatedWorld)
 				{
@@ -93,6 +106,7 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase gcdbInstance)
 			{
 				__instance.absorbInputAroundWindow = false;
+				TargetWindow = gcdbInstance;
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				// Create a temporary world if one doesn't exist.
