@@ -62,6 +62,8 @@ namespace Karda.XenoPawnPreview
 
 		private Pawn pawn;
 
+		private HashSet<Need> pawnNeeds;
+
 		private Rect rectAbilities = new Rect(
 			x: MarginMedium,
 			y: default,
@@ -448,7 +450,7 @@ namespace Karda.XenoPawnPreview
 
 			try
 			{
-				foreach (var need in this.pawn.needs.AllNeeds.Where(x => x.ShowOnNeedList || x is Need_Mood))
+				foreach (var need in this.pawnNeeds)
 				{
 					this.rectNeeds.xMin += MarginSmall;
 
@@ -732,6 +734,12 @@ namespace Karda.XenoPawnPreview
 
 			// Needs
 			this.pawn.needs.AddOrRemoveNeedsAsAppropriate();
+			this.pawnNeeds = this.pawn.needs.AllNeeds
+				.Where(x => x.ShowOnNeedList || x is Need_Mood)
+				.OrderByDescending(need => need is Need_Mood)
+				.ThenByDescending(need => need.def.major)
+				.ThenBy(need => need.def.label)
+				.ToHashSet();
 
 			// Health
 			foreach (var hediff in this.pawn.health.hediffSet.hediffs)
