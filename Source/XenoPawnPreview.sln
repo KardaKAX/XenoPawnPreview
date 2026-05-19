@@ -21,6 +21,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{CBE46B6A-6515-49DB-A5E6-87B2497B6811}"
 	ProjectSection(SolutionItems) = preProject
 		..\Languages\English\Keyed\English.xml = ..\Languages\English\Keyed\English.xml
+		..\Languages\Russian\Keyed\Russian.xml = ..\Languages\Russian\Keyed\Russian.xml
 	EndProjectSection
 EndProject
 Global
