@@ -724,6 +724,11 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		protected virtual void RefreshWindow()
 		{
+			foreach (var stat in DefDatabase<StatDef>.AllDefsListForReading.Where(x => x.Worker.ShouldShowFor(StatRequest.For(this.pawn))))
+			{
+				stat.Worker.TryClearCache();
+			}
+
 			// Render
 			this.pawn.Drawer.renderer.EnsureGraphicsInitialized();
 			this.pawn.Drawer.renderer.SetAllGraphicsDirty();
@@ -736,9 +741,7 @@ namespace Karda.XenoPawnPreview
 			this.pawn.needs.AddOrRemoveNeedsAsAppropriate();
 			this.pawnNeeds = this.pawn.needs.AllNeeds
 				.Where(x => x.ShowOnNeedList || x is Need_Mood)
-				.OrderByDescending(need => need is Need_Mood)
-				.ThenByDescending(need => need.def.major)
-				.ThenBy(need => need.def.label)
+				.OrderByDescending(y => y.def.listPriority)
 				.ToHashSet();
 
 			// Health
