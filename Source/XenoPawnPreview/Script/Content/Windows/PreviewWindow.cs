@@ -677,16 +677,19 @@ namespace Karda.XenoPawnPreview
 		{
 			this.PawnDestroy();
 
-			if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
+			try
 			{
-				this.pawn = PawnUtility.GenerateMinimalPawn();
-			}
-			else
-			{
+				HarmonyPatches_Core.PrepareGeneration = true;
 				this.pawn = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer);
 
 				this.pawn.apparel = new Pawn_ApparelTracker(this.pawn);
 				this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
+			}
+			catch (Exception ex)
+			{
+				Log.Error($"[XPP] Exception whilst generating a new pawn. Generating a minimal pawn instead.\n{ex}");
+
+				this.pawn = PawnUtility.GenerateMinimalPawn(this.pawn);
 			}
 
 			this.UpdateGenes();
@@ -708,15 +711,20 @@ namespace Karda.XenoPawnPreview
 			{
 				this.PawnGenerate();
 			}
-			else if (CompatibilityUtility.BigAndSmall_Assembly != null && Find.UIRoot is UIRoot_Entry)
-			{
-				this.pawn = PawnUtility.GenerateMinimalPawn();
-			}
 			else
 			{
-				this.pawn = Find.PawnDuplicator.Duplicate(HarmonyPatches_Core.OriginalPawn);
+				try
+				{
+					this.pawn = Find.PawnDuplicator.Duplicate(HarmonyPatches_Core.OriginalPawn.PrepareSafely());
 
-				this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
+					this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"[XPP] Exception whilst duplicating {HarmonyPatches_Core.OriginalPawn}. Generating a minimal pawn instead.\n{ex}");
+
+					this.pawn = PawnUtility.GenerateMinimalPawn(this.pawn);
+				}
 			}
 
 			this.UpdateGenes();

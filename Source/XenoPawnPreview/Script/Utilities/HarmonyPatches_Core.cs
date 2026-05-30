@@ -30,11 +30,6 @@ namespace Karda.XenoPawnPreview
 		public static event GenesChangedEventHandler GenesChanged;
 
 		/// <summary>
-		/// Gets the <see cref="Pawn"/> being targeted by this editor window.
-		/// </summary>
-		public static Pawn OriginalPawn { get; private set; }
-
-		/// <summary>
 		/// Gets the genes present on the current target <see cref="Pawn"/>.
 		/// </summary>
 		public static List<GeneDefWithType> CurrentGenes
@@ -43,6 +38,17 @@ namespace Karda.XenoPawnPreview
 				? Traverse.Create(TargetWindow).Field("tmpGenesWithType").GetValue<List<GeneDefWithType>>().Distinct().ToList()
 				: new List<GeneDefWithType>();
 		}
+
+		/// <summary>
+		/// Gets the <see cref="Pawn"/> being targeted by this editor window.
+		/// </summary>
+		public static Pawn OriginalPawn { get; private set; }
+
+		/// <summary>
+		/// Sets a value indicating whether we are currently requiring modification to the pawn generation for safe generation.
+		/// </summary>
+		/// <remarks>This will automatically revert to <see langword="false"/> once generation has started.</remarks>
+		public static bool PrepareGeneration { private get; set; }
 
 		/// <summary>
 		/// Gets the original <see cref="Rect.position"/> of the displayed <see cref="GeneCreationDialogBase"/> <see cref="Window"/>.
@@ -71,6 +77,22 @@ namespace Karda.XenoPawnPreview
 		[HarmonyPostfix]
 		[HarmonyPatch(typeof(GeneCreationDialogBase), "OnGenesChanged")]
 		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(CurrentGenes);
+
+		/// <summary>
+		/// Prefixes the <see cref="PawnGenerator"/>.TryGenerateNewPawnInternal method to fix issues on the created preview pawn.
+		/// </summary>
+		/// <param name="request">The <see cref="PawnGenerationRequest"/> of the duplicate.</param>
+		[HarmonyPrefix]
+		[HarmonyPatch(typeof(PawnGenerator), "TryGenerateNewPawnInternal")]
+		public static void PawnGenerator_TryGenerateNewPawnInternal(ref PawnGenerationRequest request)
+		{
+			if (PrepareGeneration)
+			{
+				request.CanGeneratePawnRelations = false;
+
+				PrepareGeneration = false;
+			}
+		}
 
 		/// <summary>
 		/// Patches the <see cref="Window.Close(bool)"/> method to also close the <see cref="XenoPawnPreview.PreviewWindow"/> alongside any opened <see cref="GeneCreationDialogBase"/>.

@@ -158,5 +158,57 @@ namespace Karda.XenoPawnPreview
 
 			return pawn;
 		}
+
+		/// <summary>
+		/// Prepares the given <paramref name="pawn"/> so that they are able to be generated safely using RimWorld's native methods.
+		/// </summary>
+		/// <param name="pawn">The <see cref="Pawn"/> to be prepared.</param>
+		/// <returns>The modified <paramref name="pawn"/>.</returns>
+		public static Pawn PrepareSafely(this Pawn pawn)
+		{
+			// Fix components
+			// - Ensure all default components exist.
+			PawnComponentsUtility.CreateInitialComponents(pawn);
+
+			// Fix story tracker
+			// - Ensure head is generated.
+			// - Ensure backstories are generated.
+			if (pawn.story.headType == null)
+			{
+				pawn.story.TryGetRandomHeadFromSet(DefDatabase<HeadTypeDef>.AllDefs);
+			}
+
+			List<BackstoryCategoryFilter> backstoryFilters = (List<BackstoryCategoryFilter>)AccessTools.Method(typeof(PawnBioAndNameGenerator), "GetBackstoryCategoryFiltersFor").Invoke(null, new object[] { pawn, Faction.OfPlayer.def });
+
+			if (pawn.story.Childhood == null)
+			{
+				try
+				{
+					PawnBioAndNameGenerator.FillBackstorySlotShuffled(pawn, BackstorySlot.Childhood, backstoryFilters, Faction.OfPlayer.def);
+				}
+				catch (Exception ex)
+				{
+					pawn.story.Childhood = BackstoryNoneChild;
+					Log.Warning($"[XPP] Could not fill childhood backstory with random entry, using fallback.\nReason: {ex}");
+				}
+			}
+
+			if (pawn.story.Adulthood == null)
+			{
+				try
+				{
+					PawnBioAndNameGenerator.FillBackstorySlotShuffled(pawn, BackstorySlot.Adulthood, backstoryFilters, Faction.OfPlayer.def);
+				}
+				catch (Exception ex)
+				{
+					pawn.story.Childhood = BackstoryNoneAdult;
+					Log.Warning($"[XPP] Could not fill adulthood backstory with random entry, using fallback.\nReason: {ex}");
+				}
+			}
+
+			HarmonyPatches_Core.PrepareGeneration = true;
+
+			return pawn;
+		}
 	}
 }
