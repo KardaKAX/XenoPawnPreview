@@ -25,11 +25,6 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		public const string ModName = "Xenotype Pawn Preview";
 
-		/// <summary>
-		/// The <see cref="HarmonyPatchCategory"/> used for core patches.
-		/// </summary>
-		public const string HarmonyCategoryCore = "XPP_Core";
-
 		private static readonly Listing_Standard SettingsListing = new Listing_Standard();
 
 		private static XPP_Settings modSettings;
@@ -43,28 +38,12 @@ namespace Karda.XenoPawnPreview
 		{
 			modSettings = this.GetSettings<XPP_Settings>();
 
-			Harmony harmony = new Harmony(ModID);
-
 			if (XPPContentPack == null)
 			{
 				XPPContentPack = content;
 			}
 
-			harmony.PatchCategory(HarmonyCategoryCore);
-
-			if (CompatibilityUtility.BigAndSmall_Assembly != null && ModSettings.PatchBigAndSmall)
-			{
-				harmony.Patch(
-					original: AccessTools.Method(CompatibilityUtility.BigAndSmall_Assembly.GetType("BigAndSmall.HumanoidPawnScaler"), "GetInvalidateLater"),
-					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(CompatibilityUtility.BigAndSmall_AllowCachingOnEntry)));
-			}
-
-			if (CompatibilityUtility.IdeoFactIcon_Assembly != null && ModSettings.PatchIdeoFactIcon)
-			{
-				harmony.Patch(
-					original: AccessTools.Method(CompatibilityUtility.IdeoFactIcon_Assembly.GetType("nuff.Ideology_Faction_Icon.HarmonyPatches"), "Get_FactionIcon_Helper"),
-					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(CompatibilityUtility.IdeoFactIcon_SkipComponentQuery)));
-			}
+			CompatibilityUtility.Patch(new Harmony(ModID));
 
 			Log.Message($"✓ - {ModName} loaded successfully.");
 		}

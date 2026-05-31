@@ -58,11 +58,15 @@ namespace Karda.XenoPawnPreview
 			icon: ContentFinder<Texture2D>.Get("UI/Icons/SwitchFaction") ?? BaseContent.BadTex,
 			tooltip: "Karda.XPP.Render.Rotate.Button.Tooltip".Translate());
 
+		private readonly bool originalPawnOnly;
+
 		private float needsLabelMaxX;
 
 		private Pawn pawn;
 
 		private HashSet<Need> pawnNeeds;
+
+		private Pawn pawnOriginal;
 
 		private Rect rectAbilities = new Rect(
 			x: MarginMedium,
@@ -107,8 +111,8 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PreviewWindow"/> class.
 		/// </summary>
-		/// <param name="targetWindow">The window this preview is attached to.</param>
-		public PreviewWindow(GeneCreationDialogBase targetWindow)
+		/// <param name="window">The window this preview is attached to.</param>
+		public PreviewWindow(GeneCreationDialogBase window)
 		{
 			// Window
 			this.closeOnAccept = false;
@@ -119,12 +123,24 @@ namespace Karda.XenoPawnPreview
 			this.resizeable = false;
 
 			// PreviewWindow
-			this.baseWindow = targetWindow;
+			this.baseWindow = window;
 			this.buttonRenderRotate.Callback = () => this.RotateRender();
 			this.buttonSettingsSettings.Callback = () => Find.WindowStack.Add(new Dialog_ModSettings(XPP_Mod.ModSettings.Mod));
 			this.buttonSettingsClear.Callback = () => this.PawnClear();
 			this.buttonSettingsNew.Callback = () => this.PawnGenerate();
 			this.buttonSettingsInfo.Callback = () => Find.WindowStack.Add(new Dialog_InfoCard(this.pawn));
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PreviewWindow"/> class with the given <paramref name="pawn"/> as the target.
+		/// </summary>
+		/// <param name="window"><inheritdoc cref="PreviewWindow(GeneCreationDialogBase)" path="/param[@name='window']"/></param>
+		/// <param name="pawn">The <see cref="Pawn"/> being used as the original target of this window.</param>
+		public PreviewWindow(GeneCreationDialogBase window, Pawn pawn)
+			: this(window)
+		{
+			this.originalPawnOnly = HarmonyPatches_Core.WindowType == CompatibilityUtility.WindowType.WVC_XaG_Generemover;
+			this.pawnOriginal = pawn;
 		}
 
 		/// <summary>
@@ -193,7 +209,7 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		public override void PostOpen()
 		{
-			if (HarmonyPatches_Core.OriginalPawn == null && !this.PawnGenerate())
+			if (this.pawnOriginal == null && !this.PawnGenerate())
 			{
 				Log.Error($"XPP: Failed to generate a new pawn, closing preview window.");
 				this.Close(false);
@@ -219,23 +235,52 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Notifies the preview window that the current genes should be re-applied to the target <see cref="Pawn"/>.
 		/// </summary>
-		public void UpdateGenes() => this.UpdateGenes(HarmonyPatches_Core.CurrentGenes);
+		public void UpdateGenes() => this.UpdateGenes(this.baseWindow.GetSelectedGenes());
 
 		/// <summary>
-		/// Notifies the preview window that the <paramref name="newGenes"/> should be applied to the target <see cref="Pawn"/>.
+		/// Notifies the preview window that the <paramref name="genes"/> should be applied to the target <see cref="Pawn"/>.
 		/// </summary>
-		/// <param name="newGenes">The genes being applied to the <see cref="Pawn"/>.</param>
-		public virtual void UpdateGenes(List<GeneDefWithType> newGenes)
+		/// <param name="genes">The genes being applied to the <see cref="Pawn"/>.</param>
+		public virtual void UpdateGenes(List<GeneDefWithType> genes)
 		{
-			foreach (var oldGene in this.pawn.genes.GenesListForReading)
+			if (HarmonyPatches_Core.WindowType == CompatibilityUtility.WindowType.WVC_XaG_Generemover)
 			{
-				this.pawn.genes.RemoveGene(oldGene);
-				this.pawn.story.traits.Notify_GeneRemoved(oldGene);
-			}
+				// Preview must always start with the genes of the original.
+				if (this.pawn.genes.GenesListForReading.Count == 0)
+				{
+					foreach (var gene in this.pawnOriginal.genes.GetGeneDefs())
+					{
+						this.pawn.genes.AddGene(gene.geneDef, gene.isXenogene);
+					}
+				}
 
-			foreach (var newGene in newGenes)
+				// Add genes which are on the original, but not the preview or selected.
+				foreach (var newGene in this.pawnOriginal.genes.GetGeneDefs().Except(this.pawn.genes.GetGeneDefs().Concat(genes)))
+				{
+					this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+				}
+
+				// Remove genes which are selected.
+				foreach (var oldGene in this.pawn.genes.GenesListForReading.Where(x => genes.Select(y => y.geneDef).Contains(x.def)))
+				{
+					this.pawn.genes.RemoveGene(oldGene);
+					this.pawn.story.traits.Notify_GeneRemoved(oldGene);
+				}
+			}
+			else
 			{
-				this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+				// Remove genes which are on the preview, but not selected.
+				foreach (var oldGene in this.pawn.genes.GenesListForReading.Where(x => this.pawn.genes.GetGeneDefs().Except(genes).Select(y => y.geneDef).Contains(x.def)))
+				{
+					this.pawn.genes.RemoveGene(oldGene);
+					this.pawn.story.traits.Notify_GeneRemoved(oldGene);
+				}
+
+				// Add genes which are selected, but not on the preview.
+				foreach (var newGene in genes.Except(this.pawn.genes.GetGeneDefs()))
+				{
+					this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+				}
 			}
 
 			this.refreshRequired = true;
@@ -675,6 +720,11 @@ namespace Karda.XenoPawnPreview
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
 		protected virtual bool PawnGenerate()
 		{
+			if (this.originalPawnOnly)
+			{
+				return this.PawnRegenerate();
+			}
+
 			this.PawnDestroy();
 
 			try
@@ -689,7 +739,7 @@ namespace Karda.XenoPawnPreview
 			{
 				Log.Error($"[XPP] Exception whilst generating a new pawn. Generating a minimal pawn instead.\n{ex}");
 
-				this.pawn = PawnUtility.GenerateMinimalPawn(this.pawn);
+				this.pawn = PawnUtility.GenerateMinimalPawn();
 			}
 
 			this.UpdateGenes();
@@ -699,7 +749,7 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <summary>
-		/// Attempts to regenerate the <see cref="HarmonyPatches_Core.OriginalPawn"/> and apply it as the target of the preview window.
+		/// Attempts to regenerate the <see cref="pawnOriginal"/> and apply it as the target of the preview window.
 		/// </summary>
 		/// <param name="request">The optional request to use for a pawn.</param>
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
@@ -707,7 +757,7 @@ namespace Karda.XenoPawnPreview
 		{
 			this.PawnDestroy();
 
-			if (HarmonyPatches_Core.OriginalPawn == null)
+			if (this.pawnOriginal == null)
 			{
 				this.PawnGenerate();
 			}
@@ -715,15 +765,15 @@ namespace Karda.XenoPawnPreview
 			{
 				try
 				{
-					this.pawn = Find.PawnDuplicator.Duplicate(HarmonyPatches_Core.OriginalPawn.PrepareSafely());
+					this.pawn = Find.PawnDuplicator.Duplicate(this.pawnOriginal.PrepareSafely());
 
 					this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
 				}
 				catch (Exception ex)
 				{
-					Log.Error($"[XPP] Exception whilst duplicating {HarmonyPatches_Core.OriginalPawn}. Generating a minimal pawn instead.\n{ex}");
+					Log.Error($"[XPP] Exception whilst duplicating {this.pawnOriginal}. Generating a minimal pawn instead.\n{ex}");
 
-					this.pawn = PawnUtility.GenerateMinimalPawn(this.pawn);
+					this.pawn = PawnUtility.GenerateMinimalPawn();
 				}
 			}
 

@@ -15,7 +15,7 @@ namespace Karda.XenoPawnPreview
 	/// Contains core <see cref="Harmony"/> patches used by this mod.
 	/// </summary>
 	[HarmonyPatch]
-	[HarmonyPatchCategory(XPP_Mod.HarmonyCategoryCore)]
+	[HarmonyPatchCategory(CompatibilityUtility.HarmonyCategoryCore)]
 	public static class HarmonyPatches_Core
 	{
 		/// <summary>
@@ -30,19 +30,9 @@ namespace Karda.XenoPawnPreview
 		public static event GenesChangedEventHandler GenesChanged;
 
 		/// <summary>
-		/// Gets the genes present on the current target <see cref="Pawn"/>.
+		/// Gets the supported window type currently in use with the preview window.
 		/// </summary>
-		public static List<GeneDefWithType> CurrentGenes
-		{
-			get => TargetWindow != null
-				? Traverse.Create(TargetWindow).Field("tmpGenesWithType").GetValue<List<GeneDefWithType>>().Distinct().ToList()
-				: new List<GeneDefWithType>();
-		}
-
-		/// <summary>
-		/// Gets the <see cref="Pawn"/> being targeted by this editor window.
-		/// </summary>
-		public static Pawn OriginalPawn { get; private set; }
+		public static CompatibilityUtility.WindowType WindowType { get; private set; }
 
 		/// <summary>
 		/// Sets a value indicating whether we are currently requiring modification to the pawn generation for safe generation.
@@ -74,9 +64,8 @@ namespace Karda.XenoPawnPreview
 		/// Postfixes the <see cref="Dialog_CreateXenotype.OnGenesChanged"/> method to register updates when the player changes genes.
 		/// </summary>
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
-		[HarmonyPostfix]
-		[HarmonyPatch(typeof(GeneCreationDialogBase), "OnGenesChanged")]
-		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(CurrentGenes);
+		/// <remarks>This method is patched on every instance of a <see cref="GeneCreationDialogBase"/>.</remarks>
+		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(TargetWindow.GetSelectedGenes());
 
 		/// <summary>
 		/// Prefixes the <see cref="PawnGenerator"/>.TryGenerateNewPawnInternal method to fix issues on the created preview pawn.
@@ -127,7 +116,7 @@ namespace Karda.XenoPawnPreview
 		{
 			if (__instance is GeneCreationDialogBase gcdbInstance)
 			{
-				__instance.absorbInputAroundWindow = false;
+				gcdbInstance.absorbInputAroundWindow = false;
 				TargetWindow = gcdbInstance;
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
@@ -166,25 +155,62 @@ namespace Karda.XenoPawnPreview
 					CreatedWorld = true;
 				}
 
-				if (__instance is Dialog_CreateXenotype || __instance is Dialog_CreateXenogerm)
+				if (gcdbInstance is Dialog_CreateXenotype || gcdbInstance is Dialog_CreateXenogerm)
 				{
-					OriginalPawn = Find.GameInitData.startingAndOptionalPawns.ElementAtOrDefault(Traverse.Create(__instance).Field("generationRequestIndex").GetValue<int>());
+					WindowType = CompatibilityUtility.WindowType.Rimworld;
 				}
-				else if (Type.GetType("CharacterEditor.DialogXenoType, CharacterEditor")?.IsAssignableFrom(__instance.GetType()) ?? false)
+				else if (gcdbInstance.IsWindowOfType("CharacterEditor.DialogXenoType, CharacterEditor"))
 				{
-					OriginalPawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+					WindowType = CompatibilityUtility.WindowType.CharacterEditor;
+				}
+				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_Generemover, WVC_BiotechFramework_XenotypesAndGenes"))
+				{
+					WindowType = CompatibilityUtility.WindowType.WVC_XaG_Generemover;
+				}
+				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_Morpher, WVC_BiotechFramework_XenotypesAndGenes")) // Not updating with gene changes.
+				{
+					WindowType = CompatibilityUtility.WindowType.WVC_XaG_Morpher;
+				}
+				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_XenotypeHolderBasic, WVC_BiotechFramework_XenotypesAndGenes")) // Not updating with gene changes, is not reading from current pawn.
+				{
+					WindowType = CompatibilityUtility.WindowType.WVC_XaG_XenotypeHolderBasic;
+				}
+				else if (gcdbInstance.IsWindowOfType(new string[]
+				{
+					"WVC_XenotypesAndGenes.Dialog_Golemlink, WVC_BiotechFramework_XenotypesAndGenes",
+					"WVC_XenotypesAndGenes.Dialog_Voidlink, WVC_BiotechFramework_XenotypesAndGenes",
+				}))
+				{
+					WindowType = CompatibilityUtility.WindowType.Undisplayed;
 				}
 				else
 				{
-					Log.Error($"[Xenotype Pawn Preview] Unsupported window: {gcdbInstance}\nReport this to the mod author!");
+					WindowType = CompatibilityUtility.WindowType.Undisplayed;
+					Log.Error($"[XPP] Unsupported window: {gcdbInstance}\nReport this to the mod author!");
 					return;
 				}
 
-				if (!Find.WindowStack.IsOpen(typeof(PreviewWindow)))
+				if (WindowType != CompatibilityUtility.WindowType.Undisplayed && !Find.WindowStack.IsOpen(typeof(PreviewWindow)))
 				{
-					Find.WindowStack.Add(PreviewWindow = new PreviewWindow(gcdbInstance));
+					Find.WindowStack.Add(PreviewWindow = new PreviewWindow(gcdbInstance, TargetWindow.GetSelectedPawn()));
 				}
 			}
 		}
+
+		/// <summary>
+		/// Gets if the given <paramref name="type"/> is assignable to this <paramref name="window"/>.
+		/// </summary>
+		/// <param name="window">The <see cref="GeneCreationDialogBase"/> to match against.</param>
+		/// <param name="type">The <see cref="GeneCreationDialogBase"/> type name to query.</param>
+		/// <returns><see langword="true"/> if <paramref name="type"/> can be assigned to <paramref name="window"/>.</returns>
+		public static bool IsWindowOfType(this GeneCreationDialogBase window, string type) => Type.GetType(type)?.IsAssignableFrom(window.GetType()) ?? false;
+
+		/// <summary>
+		/// Gets if any of the given <paramref name="types"/> are assignable to this <paramref name="window"/>.
+		/// </summary>
+		/// <param name="window"><inheritdoc cref="IsWindowOfType(GeneCreationDialogBase, string)" path="/param[@name='window']"/></param>
+		/// <param name="types">The <see cref="GeneCreationDialogBase"/> types to query.</param>
+		/// <returns><see langword="true"/> if any <paramref name="types"/> can be assigned to <paramref name="window"/>.</returns>
+		public static bool IsWindowOfType(this GeneCreationDialogBase window, string[] types) => types.Any(x => window.IsWindowOfType(x));
 	}
 }

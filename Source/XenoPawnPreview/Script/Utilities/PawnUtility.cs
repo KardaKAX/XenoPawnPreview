@@ -210,5 +210,15 @@ namespace Karda.XenoPawnPreview
 
 			return pawn;
 		}
+
+		/// <summary>
+		/// Gets all the currently active <paramref name="genes"/> within the tracker.
+		/// </summary>
+		/// <param name="genes">The target <see cref="Pawn_GeneTracker"/> to read from.</param>
+		/// <returns>A list of all <paramref name="genes"/> currently active in the tracker.</returns>
+		public static List<GeneDefWithType> GetGeneDefs(this Pawn_GeneTracker genes) =>
+			genes.Xenogenes.Select(x => new GeneDefWithType(x.def, true))
+				.Concat(genes.Endogenes.Select(x => new GeneDefWithType(x.def, false)))
+				.ToList();
 	}
 }
