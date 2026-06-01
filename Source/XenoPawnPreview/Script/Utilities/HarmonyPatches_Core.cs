@@ -68,6 +68,21 @@ namespace Karda.XenoPawnPreview
 		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(TargetWindow.GetSelectedGenes());
 
 		/// <summary>
+		/// Prefixes the <see cref="Need_Food.MaxLevel"/> property getter to enable the full need display outside of a playing game.
+		/// </summary>
+		/// <param name="__result">The original result of the method.</param>
+		/// <param name="___pawn">The local <see cref="Pawn"/> this tracker is linked to.</param>
+		/// <returns><see langword="true"/> if the original method is allowed to execute after the patch.</returns>
+		[HarmonyPrefix]
+		[HarmonyPatch(typeof(Need_Food), "get_MaxLevel")]
+		public static bool NeedFood_GetMaxLevel(ref float __result, Pawn ___pawn)
+		{
+			__result = ___pawn.GetStatValue(StatDefOf.MaxNutrition, true, 15);
+
+			return false;
+		}
+
+		/// <summary>
 		/// Prefixes the <see cref="PawnGenerator"/>.TryGenerateNewPawnInternal method to fix issues on the created preview pawn.
 		/// </summary>
 		/// <param name="request">The <see cref="PawnGenerationRequest"/> of the duplicate.</param>
