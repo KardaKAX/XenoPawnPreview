@@ -23,7 +23,7 @@
 	<Karda.XPP.Controller.Pawn.Button.Infocard>Открыть подробную информацию об этой пешке.</Karda.XPP.Controller.Pawn.Button.Infocard>
 	
 	<!-- Render -->
-	<Karda.XPP.Render.Rotate.Button.Tooltip>Повернуть изображение предпросмотра пешки.</Karda.XPP.Render.Rotate.Button.Tooltip>
+	<Karda.XPP.Render.Rotate.Button>Повернуть изображение предпросмотра пешки.</Karda.XPP.Render.Rotate.Button>
 	<Karda.XPP.Render.Zoom.Slider.Label>Масштаб</Karda.XPP.Render.Zoom.Slider.Label>
 	<Karda.XPP.Render.Zoom.Slider.Tooltip>Установить масштаб камеры в окне предпросмотра.</Karda.XPP.Render.Zoom.Slider.Tooltip>
   

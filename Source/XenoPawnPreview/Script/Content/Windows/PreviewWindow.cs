@@ -5,9 +5,11 @@ namespace Karda.XenoPawnPreview
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using HarmonyLib;
 	using RimWorld;
 	using UnityEngine;
 	using Verse;
+	using Verse.Sound;
 
 	/// <summary>
 	/// The preview window for the pawn within the xenotype editor.
@@ -56,17 +58,22 @@ namespace Karda.XenoPawnPreview
 
 		private readonly WindowButtonSmall buttonRenderRotate = new WindowButtonSmall(
 			icon: ContentFinder<Texture2D>.Get("UI/Icons/SwitchFaction") ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Render.Rotate.Button.Tooltip".Translate());
+			tooltip: "Karda.XPP.Render.Rotate.Button".Translate());
+
+		private readonly WindowButtonSmall buttonRenderSoundPlayer = new WindowButtonSmall(
+			icon: ContentFinder<Texture2D>.Get("UI/Buttons/PreviewSound_NotPlaying") ?? BaseContent.BadTex);
+
+		private readonly Pawn pawnOriginal;
 
 		private readonly bool originalPawnOnly;
+
+		private readonly List<FloatMenuOption> soundTypeOptions;
 
 		private float needsLabelMaxX;
 
 		private Pawn pawn;
 
 		private HashSet<Need> pawnNeeds;
-
-		private Pawn pawnOriginal;
 
 		private Rect rectAbilities = new Rect(
 			x: MarginMedium,
@@ -108,6 +115,8 @@ namespace Karda.XenoPawnPreview
 
 		private bool refreshRequired;
 
+		private int soundTypeIndex;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PreviewWindow"/> class.
 		/// </summary>
@@ -124,7 +133,26 @@ namespace Karda.XenoPawnPreview
 
 			// PreviewWindow
 			this.baseWindow = window;
+
+			this.soundTypeOptions = new List<FloatMenuOption>()
+			{
+				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Call".Translate(), () => this.soundTypeIndex = 0),
+				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Wounded".Translate(), () => this.soundTypeIndex = 1),
+				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Death".Translate(), () => this.soundTypeIndex = 2),
+			};
+
 			this.buttonRenderRotate.Callback = () => this.RotateRender();
+			this.buttonRenderSoundPlayer.Callback = () => this.PlayCurrentVoice();
+			this.buttonRenderSoundPlayer.Highlighted = (state) =>
+			{
+				if (state)
+				{
+					this.buttonRenderSoundPlayer.Tooltip = $"{string.Format("Karda.XPP.Render.Sound.Play.Button".Translate(), this.soundTypeOptions[this.soundTypeIndex].Label.Colorize(ColoredText.NameColor))}" +
+					$"\n\n" +
+					$"{"Karda.XPP.Render.Sound.Play.Button.2".Translate()}";
+				}
+			};
+			this.buttonRenderSoundPlayer.Options = this.soundTypeOptions;
 			this.buttonSettingsSettings.Callback = () => Find.WindowStack.Add(new Dialog_ModSettings(XPP_Mod.ModSettings.Mod));
 			this.buttonSettingsClear.Callback = () => this.PawnClear();
 			this.buttonSettingsNew.Callback = () => this.PawnGenerate();
@@ -147,6 +175,11 @@ namespace Karda.XenoPawnPreview
 		/// Gets the initial size of the <see cref="Window"/>.
 		/// </summary>
 		public override Vector2 InitialSize => Vector2.zero;
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the preview window is currently attempting to play a gene vox.
+		/// </summary>
+		internal bool IsVoxRequested { get; set; }
 
 		/// <summary>
 		/// Gets the pixel margin to the edge of the screen.
@@ -230,6 +263,58 @@ namespace Karda.XenoPawnPreview
 			HarmonyPatches_Core.GenesChanged += this.UpdateGenes;
 
 			base.PostOpen();
+		}
+
+		/// <summary>
+		/// Plays the lifestage sound depending on the current <see cref="soundTypeIndex"/>.
+		/// </summary>
+		public void PlayCurrentVoice() => this.PlayCurrentVoice(this.soundTypeIndex);
+
+		/// <summary>
+		/// Plays the lifestage sound depending on the current <paramref name="index"/>.
+		/// </summary>
+		/// <param name="index">The index of the sound to play.</param>
+		public virtual void PlayCurrentVoice(int index)
+		{
+			SoundDef targetSound;
+			LifeStageAge curLSA = this.pawn.RaceProps.lifeStageAges[this.pawn.ageTracker.CurLifeStageIndex];
+
+			switch (index)
+			{
+				case 1:
+					targetSound = this.pawn.mutant?.Def.soundWounded ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundWounded, curLSA.soundWounded);
+					break;
+
+				case 2:
+					targetSound = this.pawn.mutant?.Def.soundDeath ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundDeath, curLSA.soundDeath);
+					break;
+
+				default:
+					targetSound = this.pawn.mutant?.Def.soundCall ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundCall, curLSA.soundCall);
+					break;
+			}
+
+			if (targetSound == null)
+			{
+				return;
+			}
+
+			for (int i = 0; i < targetSound.subSounds.Count; i++)
+			{
+				SubSoundDef subSound = targetSound.subSounds[i];
+				AudioSource output = Find.SoundRoot.sourcePool.GetSource(true);
+
+				output.clip = ((ResolvedGrain_Clip)subSound.RandomizedResolvedGrain()).clip;
+				output.volume = AudioSourceUtility.GetSanitizedVolume(subSound.RandomizedVolume(), targetSound);
+				output.pitch = AudioSourceUtility.GetSanitizedPitch(subSound.pitchRange.RandomInRange, targetSound);
+
+				for (int j = 0; j < subSound.filters.Count; j++)
+				{
+					subSound.filters[j].SetupOn(output);
+				}
+
+				output.Play();
+			}
 		}
 
 		/// <summary>
@@ -564,6 +649,12 @@ namespace Karda.XenoPawnPreview
 			this.buttonRenderRotate.Bounds.x = this.rectRender.x;
 			this.buttonRenderRotate.Bounds.y = this.rectRender.y;
 			this.buttonRenderRotate.DrawComponent();
+
+			this.rectRender.xMin += WindowButtonSmall.Size.x + MarginSmall;
+
+			this.buttonRenderSoundPlayer.Bounds.x = this.rectRender.x;
+			this.buttonRenderSoundPlayer.Bounds.y = this.rectRender.y;
+			this.buttonRenderSoundPlayer.DrawComponent();
 
 			this.rectRender.xMin += WindowButtonSmall.Size.x + MarginSmall;
 

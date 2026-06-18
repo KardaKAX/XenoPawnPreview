@@ -23,7 +23,12 @@
 	<Karda.XPP.Controller.Pawn.Button.Infocard>Open detailed information about this Pawn.</Karda.XPP.Controller.Pawn.Button.Infocard>
 	
 	<!-- Render -->
-	<Karda.XPP.Render.Rotate.Button.Tooltip>Rotate the Pawn preview image.</Karda.XPP.Render.Rotate.Button.Tooltip>
+	<Karda.XPP.Render.Sound.Play.Button>Play the {0} vox sound.</Karda.XPP.Render.Sound.Play.Button>
+	<Karda.XPP.Render.Sound.Play.Button.2>Right-click to select a sound.</Karda.XPP.Render.Sound.Play.Button.2>
+	<Karda.XPP.Render.Sound.Type.Call>Call</Karda.XPP.Render.Sound.Type.Call>
+	<Karda.XPP.Render.Sound.Type.Death>Death</Karda.XPP.Render.Sound.Type.Death>
+	<Karda.XPP.Render.Sound.Type.Wounded>Wounded</Karda.XPP.Render.Sound.Type.Wounded>
+	<Karda.XPP.Render.Rotate.Button>Rotate the Pawn preview image.</Karda.XPP.Render.Rotate.Button>
 	<Karda.XPP.Render.Zoom.Slider.Label>Zoom</Karda.XPP.Render.Zoom.Slider.Label>
 	<Karda.XPP.Render.Zoom.Slider.Tooltip>Set the camera zoom on the preview.</Karda.XPP.Render.Zoom.Slider.Tooltip>
   

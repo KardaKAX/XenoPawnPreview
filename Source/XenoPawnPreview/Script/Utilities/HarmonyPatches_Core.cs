@@ -68,7 +68,7 @@ namespace Karda.XenoPawnPreview
 		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(TargetWindow.GetSelectedGenes());
 
 		/// <summary>
-		/// Prefixes the <see cref="Need_Food.MaxLevel"/> property getter to enable the full need display outside of a playing game.
+		/// Prefixes the <see cref="Need_Food.MaxLevel"/> property getter to enable the full need display outside of a playing program state.
 		/// </summary>
 		/// <param name="__result">The original result of the method.</param>
 		/// <param name="___pawn">The local <see cref="Pawn"/> this tracker is linked to.</param>
