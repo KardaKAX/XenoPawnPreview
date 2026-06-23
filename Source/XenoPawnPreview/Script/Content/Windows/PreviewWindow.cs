@@ -541,15 +541,26 @@ namespace Karda.XenoPawnPreview
 			// Capacities
 			if (this.pawn.def.race.IsFlesh)
 			{
-				Pair<string, Color> painLabel = HealthCardUtility.GetPainLabel(this.pawn);
-				string painTip = HealthCardUtility.GetPainTip(this.pawn);
-				DrawHealthCapacity(
-					rect: this.rectHealth,
-					curY: ref curY,
-					leftLabel: "PainLevel".Translate(),
-					rightLabel: painLabel.First,
-					rightLabelColour: painLabel.Second,
-					tipSignal: painTip);
+				try
+				{
+					Pair<string, Color> painLabel = HealthCardUtility.GetPainLabel(this.pawn);
+					string painTip = HealthCardUtility.GetPainTip(this.pawn);
+					DrawHealthCapacity(
+						rect: this.rectHealth,
+						curY: ref curY,
+						leftLabel: "PainLevel".Translate(),
+						rightLabel: painLabel.First,
+						rightLabelColour: painLabel.Second,
+						tipSignal: painTip);
+				}
+				catch (Exception ex)
+				{
+					GUI.color = ColorLibrary.RedReadable;
+					Widgets.Label(this.rectHealth, $"ERROR: {ex.Message}");
+					GUI.color = tmpColour;
+
+					curY += MarginSectionTitle;
+				}
 			}
 
 			if (!this.pawn.Dead)
@@ -565,14 +576,25 @@ namespace Karda.XenoPawnPreview
 
 				foreach (var capacity in capacities)
 				{
-					Pair<string, Color> efficiencyLabel = HealthCardUtility.GetEfficiencyLabel(this.pawn, capacity);
-					DrawHealthCapacity(
-						rect: this.rectHealth,
-						curY: ref curY,
-						leftLabel: capacity.GetLabelFor(this.pawn).CapitalizeFirst(),
-						rightLabel: efficiencyLabel.First,
-						rightLabelColour: efficiencyLabel.Second,
-						tipSignal: HealthCardUtility.GetPawnCapacityTip(this.pawn, capacity));
+					try
+					{
+						Pair<string, Color> efficiencyLabel = HealthCardUtility.GetEfficiencyLabel(this.pawn, capacity);
+						DrawHealthCapacity(
+							rect: this.rectHealth,
+							curY: ref curY,
+							leftLabel: capacity.GetLabelFor(this.pawn).CapitalizeFirst(),
+							rightLabel: efficiencyLabel.First,
+							rightLabelColour: efficiencyLabel.Second,
+							tipSignal: HealthCardUtility.GetPawnCapacityTip(this.pawn, capacity));
+					}
+					catch (Exception ex)
+					{
+						GUI.color = ColorLibrary.RedReadable;
+						Widgets.Label(this.rectHealth, $"ERROR: {ex.Message}");
+						GUI.color = tmpColour;
+
+						curY += MarginSectionTitle;
+					}
 				}
 			}
 
