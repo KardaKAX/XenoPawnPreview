@@ -182,11 +182,11 @@ namespace Karda.XenoPawnPreview
 				{
 					WindowType = CompatibilityUtility.WindowType.WVC_XaG_Generemover;
 				}
-				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_Morpher, WVC_BiotechFramework_XenotypesAndGenes")) // Not updating with gene changes.
+				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_Morpher, WVC_BiotechFramework_XenotypesAndGenes"))
 				{
 					WindowType = CompatibilityUtility.WindowType.WVC_XaG_Morpher;
 				}
-				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_XenotypeHolderBasic, WVC_BiotechFramework_XenotypesAndGenes")) // Not updating with gene changes, is not reading from current pawn.
+				else if (gcdbInstance.IsWindowOfType("WVC_XenotypesAndGenes.Dialog_XenotypeHolderBasic, WVC_BiotechFramework_XenotypesAndGenes"))
 				{
 					WindowType = CompatibilityUtility.WindowType.WVC_XaG_XenotypeHolderBasic;
 				}
