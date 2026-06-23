@@ -117,6 +117,7 @@ namespace Karda.XenoPawnPreview
 					Find.GameInitData?.startingAndOptionalPawns.Clear();
 
 					Log.Message("[XPP] Cleared the temporary world.");
+					CreatedWorld = false;
 				}
 			}
 		}
@@ -136,7 +137,7 @@ namespace Karda.XenoPawnPreview
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				// Create a temporary world if one doesn't exist.
-				if (Find.GameInitData == null && Current.ProgramState == ProgramState.Entry)
+				if (Current.Game == null && Current.ProgramState == ProgramState.Entry)
 				{
 					Current.Game = new Game();
 					Current.Game.InitData = new GameInitData()
