@@ -139,36 +139,46 @@ namespace Karda.XenoPawnPreview
 				// Create a temporary world if one doesn't exist.
 				if (Current.Game == null && Current.ProgramState == ProgramState.Entry)
 				{
-					Current.Game = new Game();
-					Current.Game.InitData = new GameInitData()
+					try
 					{
-						startingPawnCount = 1,
-					};
-
-					Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
-					Find.Scenario.PreConfigure();
-
-					Current.Game.storyteller = new Storyteller()
-					{
-						def = StorytellerDefOf.Cassandra,
-						difficultyDef = DifficultyDefOf.Rough,
-					};
-
-					Current.Game.World = WorldGenerator.GenerateWorld(
-						planetCoverage: 0.05f,
-						seedString: "0",
-						overallRainfall: OverallRainfall.Normal,
-						overallTemperature: OverallTemperature.Normal,
-						population: OverallPopulation.Normal,
-						landmarkDensity: LandmarkDensity.Normal,
-						factions: new List<FactionDef>
+						Current.Game = new Game();
+						Current.Game.InitData = new GameInitData()
 						{
-							FactionDefOf.PlayerColony,
-						});
-					Find.GameInitData.startingTile = TileFinder.RandomStartingTile();
+							startingPawnCount = 1,
+						};
 
-					Log.Message("[XPP] Created a temporary world");
-					CreatedWorld = true;
+						Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+						Find.Scenario.PreConfigure();
+
+						Current.Game.storyteller = new Storyteller()
+						{
+							def = StorytellerDefOf.Cassandra,
+							difficultyDef = DifficultyDefOf.Rough,
+						};
+
+						Current.Game.InitData.ResetWorldRelatedMapInitData();
+						Current.Game.World = WorldGenerator.GenerateWorld(
+							planetCoverage: 0.05f,
+							seedString: "0",
+							overallRainfall: OverallRainfall.Normal,
+							overallTemperature: OverallTemperature.Normal,
+							population: OverallPopulation.Normal,
+							landmarkDensity: LandmarkDensity.Normal,
+							factions: new List<FactionDef>
+							{
+							FactionDefOf.PlayerColony,
+							FactionDefOf.OutlanderCivil,
+							});
+						Find.GameInitData.startingTile = TileFinder.RandomStartingTile();
+
+						Log.Message("[XPP] Created a temporary world");
+						CreatedWorld = true;
+					}
+					catch (Exception ex)
+					{
+						FailGracefully($"Failed to generate a temporary world.\n{ex}");
+						return;
+					}
 				}
 
 				if (gcdbInstance is Dialog_CreateXenotype || gcdbInstance is Dialog_CreateXenogerm)
@@ -202,7 +212,7 @@ namespace Karda.XenoPawnPreview
 				else
 				{
 					WindowType = CompatibilityUtility.WindowType.Undisplayed;
-					Log.Error($"[XPP] Unsupported window: {gcdbInstance}\nReport this to the mod author!");
+					FailGracefully($"Unsupported window: {gcdbInstance}\nReport this to the mod author!");
 					return;
 				}
 
@@ -228,5 +238,23 @@ namespace Karda.XenoPawnPreview
 		/// <param name="types">The <see cref="GeneCreationDialogBase"/> types to query.</param>
 		/// <returns><see langword="true"/> if any <paramref name="types"/> can be assigned to <paramref name="window"/>.</returns>
 		public static bool IsWindowOfType(this GeneCreationDialogBase window, string[] types) => types.Any(x => window.IsWindowOfType(x));
+
+		/// <summary>
+		/// Returns from the creation of the preview window whilst cleaning up after itself.
+		/// </summary>
+		/// <param name="message">The error message to be displayed after failure.</param>
+		private static void FailGracefully(string message)
+		{
+			TargetWindow = null;
+			PreviewWindow?.Close();
+			PreviewWindow = null;
+
+			if (CreatedWorld && Current.Game != null)
+			{
+				GenScene.GoToMainMenu();
+			}
+
+			Log.Error($"[XPP] {message}");
+		}
 	}
 }
