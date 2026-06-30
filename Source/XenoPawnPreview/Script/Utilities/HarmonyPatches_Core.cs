@@ -113,8 +113,7 @@ namespace Karda.XenoPawnPreview
 
 				if (CreatedWorld && Current.Game != null)
 				{
-					// We shouldn't be in an actual game here, so we can clear any temporary game information through returning to the main menu.
-					GenScene.GoToMainMenu();
+					Current.Game = null;
 
 					Log.Message("[XPP] Cleared the temporary world.");
 					CreatedWorld = false;
