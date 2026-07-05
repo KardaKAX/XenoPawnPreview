@@ -169,7 +169,9 @@ namespace Karda.XenoPawnPreview
 			switch (HarmonyPatches_Core.WindowType)
 			{
 				case WindowType.Rimworld:
-					return Find.GameInitData.startingAndOptionalPawns.ElementAtOrDefault(Traverse.Create(window).Field("generationRequestIndex").GetValue<int>());
+					return Current.ProgramState == ProgramState.Entry
+						? Find.GameInitData.startingAndOptionalPawns.ElementAtOrDefault(Traverse.Create(window).Field("generationRequestIndex").GetValue<int>())
+						: Find.Selector.SelectedPawns.FirstOrDefault();
 
 				case WindowType.CharacterEditor:
 					return Traverse.Create(window).Field("pawn").GetValue<Pawn>();

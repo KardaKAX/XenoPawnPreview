@@ -5,6 +5,7 @@ namespace Karda.XenoPawnPreview
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using BigAndSmall;
 	using HarmonyLib;
 	using RimWorld;
 	using RimWorld.Planet;
@@ -18,6 +19,8 @@ namespace Karda.XenoPawnPreview
 	[HarmonyPatchCategory(CompatibilityUtility.HarmonyCategoryCore)]
 	public static class HarmonyPatches_Core
 	{
+		private static WorldGenPart genStage;
+
 		/// <summary>
 		/// Handles updates to the genes being changed within the editor.
 		/// </summary>
@@ -28,6 +31,17 @@ namespace Karda.XenoPawnPreview
 		/// Called when the genes have been changed within the editor.
 		/// </summary>
 		public static event GenesChangedEventHandler GenesChanged;
+
+		[Flags]
+		private enum WorldGenPart
+		{
+			None = 0,
+			Game = 1,
+			InitData = 2,
+			Scenario = 4,
+			Storyteller = 8,
+			World = 16,
+		}
 
 		/// <summary>
 		/// Gets the supported window type currently in use with the preview window.
@@ -44,11 +58,6 @@ namespace Karda.XenoPawnPreview
 		/// Gets the original <see cref="Rect.position"/> of the displayed <see cref="GeneCreationDialogBase"/> <see cref="Window"/>.
 		/// </summary>
 		public static Vector2 OriginalWindowPosition { get; private set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether a world was created in the process of opening the preview window.
-		/// </summary>
-		private static bool CreatedWorld { get; set; }
 
 		/// <summary>
 		/// Gets or sets the current <see cref="XenoPawnPreview.PreviewWindow"/> instance.
@@ -109,15 +118,7 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase)
 			{
 				PreviewWindow?.Close(false);
-				TargetWindow = null;
-
-				if (CreatedWorld && Current.Game != null)
-				{
-					Current.Game = null;
-
-					Log.Message("[XPP] Cleared the temporary world.");
-					CreatedWorld = false;
-				}
+				CloseGracefully();
 			}
 		}
 
@@ -136,47 +137,104 @@ namespace Karda.XenoPawnPreview
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				// Create a temporary world if one doesn't exist.
-				if (Current.Game == null && Current.ProgramState == ProgramState.Entry)
+				if (Current.ProgramState == ProgramState.Entry)
 				{
-					try
+					if (Current.Game == null)
 					{
-						Current.Game = new Game();
-						Current.Game.InitData = new GameInitData()
+						try
 						{
-							startingPawnCount = 1,
-						};
+							Current.Game = new Game();
 
-						Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
-						Find.Scenario.PreConfigure();
-
-						Current.Game.storyteller = new Storyteller()
+							Log.Message("[XPP] Temporary world: Created 'Game'.");
+							genStage |= WorldGenPart.Game;
+						}
+						catch (Exception ex)
 						{
-							def = StorytellerDefOf.Cassandra,
-							difficultyDef = DifficultyDefOf.Rough,
-						};
-
-						Current.Game.InitData.ResetWorldRelatedMapInitData();
-						Current.Game.World = WorldGenerator.GenerateWorld(
-							planetCoverage: 0.05f,
-							seedString: "0",
-							overallRainfall: OverallRainfall.Normal,
-							overallTemperature: OverallTemperature.Normal,
-							population: OverallPopulation.Normal,
-							landmarkDensity: LandmarkDensity.Normal,
-							factions: new List<FactionDef>
-							{
-							FactionDefOf.PlayerColony,
-							FactionDefOf.OutlanderCivil,
-							});
-						Find.GameInitData.startingTile = TileFinder.RandomStartingTile();
-
-						Log.Message("[XPP] Created a temporary world");
-						CreatedWorld = true;
+							CloseGracefully($"Temporary world generation failed whilst creating 'Game'.\n{ex}");
+							return;
+						}
 					}
-					catch (Exception ex)
+
+					if (Current.Game.InitData == null || Current.Game.InitData.startingPawnCount < 1)
 					{
-						FailGracefully($"Failed to generate a temporary world.\n{ex}");
-						return;
+						try
+						{
+							Current.Game.InitData = new GameInitData()
+							{
+								startingPawnCount = 1,
+							};
+
+							Log.Message("[XPP] Temporary world: Created 'Game.InitData'.");
+							genStage |= WorldGenPart.InitData;
+						}
+						catch (Exception ex)
+						{
+							CloseGracefully($"Temporary world generation failed whilst creating 'Game.InitData'.\n{ex}");
+							return;
+						}
+					}
+
+					if (Current.Game.Scenario == null)
+					{
+						try
+						{
+							Current.Game.Scenario = ScenarioDefOf.Crashlanded.scenario;
+							Find.Scenario.PreConfigure();
+
+							Log.Message("[XPP] Temporary world: Created 'Game.Scenario'.");
+							genStage |= WorldGenPart.Scenario;
+						}
+						catch (Exception ex)
+						{
+							CloseGracefully($"Temporary world generation failed whilst creating 'Game.Scenario'.\n{ex}");
+							return;
+						}
+					}
+
+					if (Current.Game.storyteller.def == null || Current.Game.storyteller.difficultyDef == null)
+					{
+						try
+						{
+							Current.Game.storyteller.def = StorytellerDefOf.Cassandra;
+							Current.Game.storyteller.difficultyDef = DifficultyDefOf.Rough;
+
+							Log.Message("[XPP] Temporary world: Assigned 'Game.Storyteller'.");
+							genStage |= WorldGenPart.Storyteller;
+						}
+						catch (Exception ex)
+						{
+							CloseGracefully($"Temporary world generation failed whilst assigning 'Game.Storyteller'.\n{ex}");
+							return;
+						}
+					}
+
+					if (Current.Game.World == null)
+					{
+						try
+						{
+							Current.Game.InitData.ResetWorldRelatedMapInitData();
+							Current.Game.World = WorldGenerator.GenerateWorld(
+								planetCoverage: 0.05f,
+								seedString: "0",
+								overallRainfall: OverallRainfall.Normal,
+								overallTemperature: OverallTemperature.Normal,
+								population: OverallPopulation.Normal,
+								landmarkDensity: LandmarkDensity.Normal,
+								factions: new List<FactionDef>
+								{
+									FactionDefOf.PlayerColony,
+									FactionDefOf.OutlanderCivil,
+								});
+							Find.GameInitData.startingTile = TileFinder.RandomStartingTile();
+
+							Log.Message("[XPP] Temporary world: Created 'Game.World'.");
+							genStage |= WorldGenPart.World;
+						}
+						catch (Exception ex)
+						{
+							CloseGracefully($"Temporary world generation failed whilst creating 'Game.World'.\n{ex}");
+							return;
+						}
 					}
 				}
 
@@ -211,7 +269,7 @@ namespace Karda.XenoPawnPreview
 				else
 				{
 					WindowType = CompatibilityUtility.WindowType.Undisplayed;
-					FailGracefully($"Unsupported window: {gcdbInstance}\nReport this to the mod author!");
+					CloseGracefully($"Unsupported window: {gcdbInstance}\nReport this to the mod author!");
 					return;
 				}
 
@@ -241,19 +299,52 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Returns from the creation of the preview window whilst cleaning up after itself.
 		/// </summary>
-		/// <param name="message">The error message to be displayed after failure.</param>
-		private static void FailGracefully(string message)
+		/// <param name="errorMessage">The error message to be displayed after failure.</param>
+		private static void CloseGracefully(string errorMessage = "")
 		{
 			TargetWindow = null;
 			PreviewWindow?.Close();
 			PreviewWindow = null;
 
-			if (CreatedWorld && Current.Game != null)
+			if (genStage.HasFlag(WorldGenPart.Game))
 			{
-				GenScene.GoToMainMenu();
+				Current.Game = null;
+
+				Log.Message("[XPP] Temporary world: Cleared 'Game'.");
+				genStage = WorldGenPart.None;
 			}
 
-			Log.Error($"[XPP] {message}");
+			if (genStage.HasFlag(WorldGenPart.InitData))
+			{
+				Current.Game.InitData = null;
+
+				Log.Message("[XPP] Temporary world: Cleared 'Game.InitData'.");
+				genStage &= ~WorldGenPart.InitData;
+			}
+
+			if (genStage.HasFlag(WorldGenPart.Scenario))
+			{
+				Current.Game.Scenario = null;
+
+				Log.Message("[XPP] Temporary world: Cleared 'Game.Scenario'.");
+				genStage &= ~WorldGenPart.Scenario;
+			}
+
+			// Storyteller only assigns default values if they were invalid.
+			genStage &= ~WorldGenPart.Storyteller;
+
+			if (genStage.HasFlag(WorldGenPart.World))
+			{
+				Current.Game.World = null;
+
+				Log.Message("[XPP] Temporary world: Cleared 'Game.World'.");
+				genStage &= ~WorldGenPart.World;
+			}
+
+			if (errorMessage != string.Empty)
+			{
+				Log.Error($"[XPP] {errorMessage}");
+			}
 		}
 	}
 }

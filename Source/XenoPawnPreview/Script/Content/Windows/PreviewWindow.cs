@@ -192,6 +192,12 @@ namespace Karda.XenoPawnPreview
 		/// <param name="inRect">The bounds of the <see cref="Window"/>.</param>
 		public override void DoWindowContents(Rect inRect)
 		{
+			if (this.pawn == null)
+			{
+				// Skip rendering this frame if the window is being destroyed.
+				return;
+			}
+
 			// Set window transforms.
 			this.baseWindow.windowRect.position = HarmonyPatches_Core.OriginalWindowPosition + XPP_Mod.ModSettings.WindowOffset;
 
