@@ -33,6 +33,11 @@ namespace Karda.XenoPawnPreview
 		//public bool PawnGenerateMinimal = false;
 
 		/// <summary>
+		/// The maximum height multiplier of the preview window compared to the base editor.
+		/// </summary>
+		public float WindowHeightMax = 0.8f;
+
+		/// <summary>
 		/// Offsets the <see cref="GeneCreationDialogBase"/> by the given value on the horizontal axis.
 		/// </summary>
 		public Vector2 WindowOffset = WindowOffsetDefault;

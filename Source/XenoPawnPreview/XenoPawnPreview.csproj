@@ -70,6 +70,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Script\Content\Widgets\WindowSection.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Abilities.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Needs.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Health.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Skills.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Traits.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Backstories.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Renderer.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Controller.cs" />
+    <Compile Include="Script\Content\XPP_API.cs" />
+    <Compile Include="Script\Utilities\MathUtility.cs" />
     <Compile Include="Script\Utilities\PawnUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Script\Content\Windows\PreviewWindow.cs" />

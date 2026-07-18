@@ -215,14 +215,14 @@ namespace Karda.XenoPawnPreview
 					postfix: new HarmonyMethod(typeof(HarmonyPatches_Core), nameof(HarmonyPatches_Core.GeneCreationDialogBase_OnGenesChanged)));
 			}
 
-			if (BigAndSmall_Assembly != null && XPP_Mod.ModSettings.PatchBigAndSmall)
+			if (BigAndSmall_Assembly != null && XPP_API.Settings.PatchBigAndSmall)
 			{
 				harmony.Patch(
 					original: AccessTools.Method(BigAndSmall_Assembly.GetType("BigAndSmall.HumanoidPawnScaler"), "GetInvalidateLater"),
 					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(BigAndSmall_AllowCachingOnEntry)));
 			}
 
-			if (IdeoFactIcon_Assembly != null && XPP_Mod.ModSettings.PatchIdeoFactIcon)
+			if (IdeoFactIcon_Assembly != null && XPP_API.Settings.PatchIdeoFactIcon)
 			{
 				harmony.Patch(
 					original: AccessTools.Method(IdeoFactIcon_Assembly.GetType("nuff.Ideology_Faction_Icon.HarmonyPatches"), "Get_FactionIcon_Helper"),

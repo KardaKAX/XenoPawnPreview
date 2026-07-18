@@ -5,7 +5,6 @@ namespace Karda.XenoPawnPreview
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using HarmonyLib;
 	using RimWorld;
 	using UnityEngine;
 	using Verse;
@@ -16,147 +15,37 @@ namespace Karda.XenoPawnPreview
 	/// </summary>
 	public class PreviewWindow : Window
 	{
-		private const float ColumnWidth = 256f;
-
-		private const float MarginSmall = 6f;
-
-		private const float MarginMedium = 8f;
-
-		private const float MarginLarge = 16f;
-
-		private const float MarginKeyValues = 90f;
-
-		private const float MarginSectionTitle = 24f;
-
-		private const float PawnPreviewSize = 256f;
-
-		private readonly GeneCreationDialogBase baseWindow;
-
-		private readonly Rect rectSettings = new Rect(
-			x: 0f,
-			y: 0f,
-			width: ColumnWidth,
-			height: WindowButtonSmall.Size.y + (MarginSmall * 2f));
-
-		private readonly RenderTexture texPawnRender = new RenderTexture((int)PawnPreviewSize, (int)PawnPreviewSize, 32, RenderTextureFormat.ARGB32);
-
-		private readonly WindowButtonSmall buttonSettingsClear = new WindowButtonSmall(
-			icon: ContentFinder<Texture2D>.Get("XPP/UI/Icons/PawnRecycle") ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Controller.Pawn.Button.Recycle".Translate());
-
-		private readonly WindowButtonSmall buttonSettingsInfo = new WindowButtonSmall(
-			icon: TexButton.Info ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Controller.Pawn.Button.Infocard".Translate());
-
-		private readonly WindowButtonSmall buttonSettingsNew = new WindowButtonSmall(
-			icon: ContentFinder<Texture2D>.Get("XPP/UI/Icons/PawnNew") ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Controller.Pawn.Button.New".Translate());
-
-		private readonly WindowButtonSmall buttonSettingsSettings = new WindowButtonSmall(
-			icon: ContentFinder<Texture2D>.Get("UI/Icons/Options/OptionsGeneral") ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Controller.Settings.Button".Translate());
-
-		private readonly WindowButtonSmall buttonRenderRotate = new WindowButtonSmall(
-			icon: ContentFinder<Texture2D>.Get("UI/Icons/SwitchFaction") ?? BaseContent.BadTex,
-			tooltip: "Karda.XPP.Render.Rotate.Button".Translate());
-
-		private readonly WindowButtonSmall buttonRenderSoundPlayer = new WindowButtonSmall(
-			icon: ContentFinder<Texture2D>.Get("UI/Buttons/PreviewSound_NotPlaying") ?? BaseContent.BadTex);
-
-		private readonly Pawn pawnOriginal;
+		private const float MarginWindow = 16f;
 
 		private readonly bool originalPawnOnly;
 
-		private readonly List<FloatMenuOption> soundTypeOptions;
-
-		private float needsLabelMaxX;
-
-		private Pawn pawn;
-
-		private HashSet<Need> pawnNeeds;
-
-		private Rect rectAbilities = new Rect(
-			x: MarginMedium,
-			y: default,
-			width: ColumnWidth - MarginMedium,
-			height: MarginSectionTitle);
-
-		private Rect rectBackstories = new Rect(
-			x: MarginMedium,
-			y: default,
-			width: ColumnWidth - MarginMedium,
-			height: MarginSectionTitle);
-
-		private Rect rectHealth = new Rect(Rect.zero);
-
-		private Rect rectNeeds = new Rect(
-			x: ColumnWidth,
-			y: MarginSmall,
-			width: ColumnWidth,
-			height: default);
-
-		private Rect rectRender = new Rect(Rect.zero);
-
-		private Rect rectSkills = new Rect(
-			x: MarginMedium,
-			y: default,
-			width: ColumnWidth - MarginMedium,
-			height: default);
-
-		private Rect rectTraits = new Rect(
-			x: MarginMedium,
-			y: default,
-			width: ColumnWidth - MarginMedium,
-			height: default);
-
-		private Rot4 renderAngle = Rot4.South;
-
-		private float renderZoom = 1f;
+		private readonly List<WindowSection> windowSections = new List<WindowSection>()
+		{
+			new WindowSection_Controller(),
+			new WindowSection_Renderer(),
+			new WindowSection_Backstories(),
+			new WindowSection_Traits(),
+			new WindowSection_Skills(),
+			new WindowSection_Abilities(),
+			new WindowSection_Needs(),
+			new WindowSection_Health(),
+		};
 
 		private bool refreshRequired;
-
-		private int soundTypeIndex;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PreviewWindow"/> class.
 		/// </summary>
 		/// <param name="window">The window this preview is attached to.</param>
-		public PreviewWindow(GeneCreationDialogBase window)
+		public PreviewWindow()
 		{
 			// Window
 			this.closeOnAccept = false;
 			this.closeOnCancel = false;
 			this.doCloseButton = false;
 			this.doCloseX = false;
-			this.draggable = XPP_Mod.ModSettings.WindowStandalone;
+			this.draggable = XPP_API.Settings.WindowStandalone;
 			this.resizeable = false;
-
-			// PreviewWindow
-			this.baseWindow = window;
-
-			this.soundTypeOptions = new List<FloatMenuOption>()
-			{
-				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Call".Translate(), () => this.soundTypeIndex = 0),
-				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Wounded".Translate(), () => this.soundTypeIndex = 1),
-				new FloatMenuOption("Karda.XPP.Render.Sound.Type.Death".Translate(), () => this.soundTypeIndex = 2),
-			};
-
-			this.buttonRenderRotate.Callback = () => this.RotateRender();
-			this.buttonRenderSoundPlayer.Callback = () => this.PlayCurrentVoice();
-			this.buttonRenderSoundPlayer.Highlighted = (state) =>
-			{
-				if (state)
-				{
-					this.buttonRenderSoundPlayer.Tooltip = $"{string.Format("Karda.XPP.Render.Sound.Play.Button".Translate(), this.soundTypeOptions[this.soundTypeIndex].Label.Colorize(ColoredText.NameColor))}" +
-					$"\n\n" +
-					$"{"Karda.XPP.Render.Sound.Play.Button.2".Translate()}";
-				}
-			};
-			this.buttonRenderSoundPlayer.Options = this.soundTypeOptions;
-			this.buttonSettingsSettings.Callback = () => Find.WindowStack.Add(new Dialog_ModSettings(XPP_Mod.ModSettings.Mod));
-			this.buttonSettingsClear.Callback = () => this.PawnClear();
-			this.buttonSettingsNew.Callback = () => this.PawnGenerate();
-			this.buttonSettingsInfo.Callback = () => Find.WindowStack.Add(new Dialog_InfoCard(this.pawn));
 		}
 
 		/// <summary>
@@ -164,11 +53,11 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		/// <param name="window"><inheritdoc cref="PreviewWindow(GeneCreationDialogBase)" path="/param[@name='window']"/></param>
 		/// <param name="pawn">The <see cref="Pawn"/> being used as the original target of this window.</param>
-		public PreviewWindow(GeneCreationDialogBase window, Pawn pawn)
-			: this(window)
+		public PreviewWindow(Pawn pawn)
+			: this()
 		{
 			this.originalPawnOnly = HarmonyPatches_Core.WindowType == CompatibilityUtility.WindowType.WVC_XaG_Generemover;
-			this.pawnOriginal = pawn;
+			XPP_API.BasePawn = pawn;
 		}
 
 		/// <summary>
@@ -177,9 +66,9 @@ namespace Karda.XenoPawnPreview
 		public override Vector2 InitialSize => Vector2.zero;
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the preview window is currently attempting to play a gene vox.
+		/// Gets the maximum height of this window, in pixels.
 		/// </summary>
-		internal bool IsVoxRequested { get; set; }
+		public float MaxHeight { get => XPP_API.BaseWindow.windowRect.height * XPP_API.Settings.WindowHeightMax; }
 
 		/// <summary>
 		/// Gets the pixel margin to the edge of the screen.
@@ -192,42 +81,82 @@ namespace Karda.XenoPawnPreview
 		/// <param name="inRect">The bounds of the <see cref="Window"/>.</param>
 		public override void DoWindowContents(Rect inRect)
 		{
-			if (this.pawn == null)
+			// Skip rendering this frame if the window is being destroyed.
+			if (XPP_API.PreviewPawn == null)
 			{
-				// Skip rendering this frame if the window is being destroyed.
 				return;
 			}
 
 			// Set window transforms.
-			this.baseWindow.windowRect.position = HarmonyPatches_Core.OriginalWindowPosition + XPP_Mod.ModSettings.WindowOffset;
+			XPP_API.BaseWindow.windowRect.position = HarmonyPatches_Core.OriginalWindowPosition + XPP_API.Settings.WindowOffset;
 
-			if (!XPP_Mod.ModSettings.WindowStandalone)
+			if (!XPP_API.Settings.WindowStandalone)
 			{
-				this.windowRect.x = this.baseWindow.windowRect.xMax + MarginLarge;
-				this.windowRect.y = this.baseWindow.windowRect.BottomHalf().y - (this.windowRect.height / 2f);
+				this.windowRect.x = XPP_API.BaseWindow.windowRect.xMax + MarginWindow;
+				this.windowRect.y = XPP_API.BaseWindow.windowRect.BottomHalf().y - (this.windowRect.height / 2f);
 			}
 
-			this.windowRect.size = new Vector2(
-				x: ColumnWidth * 2f,
-				y: this.rectAbilities.yMax - this.rectSettings.yMin);
-
-			this.draggable = XPP_Mod.ModSettings.WindowStandalone;
+			this.draggable = XPP_API.Settings.WindowStandalone;
 
 			// Perform update before rendering.
 			if (this.refreshRequired)
 			{
-				this.RefreshWindow();
+				for (int i = 0; i < this.windowSections.Count; i++)
+				{
+					WindowSection curSection = this.windowSections[i];
+
+					try
+					{
+						curSection.Update();
+					}
+					catch (Exception ex)
+					{
+						Log.ErrorOnce($"[XPP] Exception whilst updating {curSection}.\n{ex}", curSection.GetHashCode());
+					}
+				}
 			}
 
 			// Draw window components.
-			this.DrawSettings();
-			this.DrawPawnRender();
-			this.DrawPawnBackstories();
-			this.DrawPawnTraits();
-			this.DrawPawnSkills();
-			this.DrawPawnAbilities();
-			this.DrawPawnNeeds();
-			this.DrawPawnHealth();
+			float curHeight = 0f;
+			float curWidth = 0f;
+			Rect curSectionRect = Rect.zero;
+
+			for (int i = 0; i < this.windowSections.Count; i++)
+			{
+				WindowSection curSection = this.windowSections.ElementAt(i);
+				WindowSection lastSection = this.windowSections.ElementAtOrDefault(i - 1);
+
+				curSectionRect.size = curSection.Bounds.size;
+
+				if (curSectionRect.yMax + (lastSection?.Bounds.height ?? 0f) >= this.MaxHeight)
+				{
+					curSectionRect.y = 0f;
+					curSectionRect.x += curWidth;
+					curWidth = 0f;
+				}
+				else
+				{
+					curSectionRect.y += lastSection?.Bounds.height ?? 0f;
+				}
+
+				curHeight = Math.Max(curHeight, curSectionRect.yMax);
+				curWidth = Math.Max(curWidth, curSectionRect.width);
+
+				Widgets.BeginGroup(curSectionRect);
+
+				try
+				{
+					curSection.Draw();
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"[XPP] Exception whilst drawing '{curSection}'.\n{ex}");
+				}
+
+				Widgets.EndGroup(); // curSectionRect
+			}
+
+			this.windowRect.size = new Vector2(curSectionRect.x + curWidth, curHeight);
 		}
 
 		/// <summary>
@@ -248,7 +177,7 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		public override void PostOpen()
 		{
-			if (this.pawnOriginal == null && !this.PawnGenerate())
+			if (XPP_API.BasePawn == null && !this.PawnGenerate())
 			{
 				Log.Error($"XPP: Failed to generate a new pawn, closing preview window.");
 				this.Close(false);
@@ -272,61 +201,9 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <summary>
-		/// Plays the lifestage sound depending on the current <see cref="soundTypeIndex"/>.
-		/// </summary>
-		public void PlayCurrentVoice() => this.PlayCurrentVoice(this.soundTypeIndex);
-
-		/// <summary>
-		/// Plays the lifestage sound depending on the current <paramref name="index"/>.
-		/// </summary>
-		/// <param name="index">The index of the sound to play.</param>
-		public virtual void PlayCurrentVoice(int index)
-		{
-			SoundDef targetSound;
-			LifeStageAge curLSA = this.pawn.RaceProps.lifeStageAges[this.pawn.ageTracker.CurLifeStageIndex];
-
-			switch (index)
-			{
-				case 1:
-					targetSound = this.pawn.mutant?.Def.soundWounded ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundWounded, curLSA.soundWounded);
-					break;
-
-				case 2:
-					targetSound = this.pawn.mutant?.Def.soundDeath ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundDeath, curLSA.soundDeath);
-					break;
-
-				default:
-					targetSound = this.pawn.mutant?.Def.soundCall ?? this.pawn.genes.GetSoundOverrideFromGenes(x => x.soundCall, curLSA.soundCall);
-					break;
-			}
-
-			if (targetSound == null)
-			{
-				return;
-			}
-
-			for (int i = 0; i < targetSound.subSounds.Count; i++)
-			{
-				SubSoundDef subSound = targetSound.subSounds[i];
-				AudioSource output = Find.SoundRoot.sourcePool.GetSource(true);
-
-				output.clip = ((ResolvedGrain_Clip)subSound.RandomizedResolvedGrain()).clip;
-				output.volume = AudioSourceUtility.GetSanitizedVolume(subSound.RandomizedVolume(), targetSound);
-				output.pitch = AudioSourceUtility.GetSanitizedPitch(subSound.pitchRange.RandomInRange, targetSound);
-
-				for (int j = 0; j < subSound.filters.Count; j++)
-				{
-					subSound.filters[j].SetupOn(output);
-				}
-
-				output.Play();
-			}
-		}
-
-		/// <summary>
 		/// Notifies the preview window that the current genes should be re-applied to the target <see cref="Pawn"/>.
 		/// </summary>
-		public void UpdateGenes() => this.UpdateGenes(this.baseWindow.GetSelectedGenes());
+		public void UpdateGenes() => this.UpdateGenes(XPP_API.BaseWindow.GetSelectedGenes());
 
 		/// <summary>
 		/// Notifies the preview window that the <paramref name="genes"/> should be applied to the target <see cref="Pawn"/>.
@@ -337,40 +214,40 @@ namespace Karda.XenoPawnPreview
 			if (HarmonyPatches_Core.WindowType == CompatibilityUtility.WindowType.WVC_XaG_Generemover)
 			{
 				// Preview must always start with the genes of the original.
-				if (this.pawn.genes.GenesListForReading.Count == 0)
+				if (XPP_API.PreviewPawn.genes.GenesListForReading.Count == 0)
 				{
-					foreach (var gene in this.pawnOriginal.genes.GetGeneDefs())
+					foreach (var gene in XPP_API.BasePawn.genes.GetGeneDefs())
 					{
-						this.pawn.genes.AddGene(gene.geneDef, gene.isXenogene);
+						XPP_API.PreviewPawn.genes.AddGene(gene.geneDef, gene.isXenogene);
 					}
 				}
 
 				// Add genes which are on the original, but not the preview or selected.
-				foreach (var newGene in this.pawnOriginal.genes.GetGeneDefs().Except(this.pawn.genes.GetGeneDefs().Concat(genes)))
+				foreach (var newGene in XPP_API.BasePawn.genes.GetGeneDefs().Except(XPP_API.PreviewPawn.genes.GetGeneDefs().Concat(genes)))
 				{
-					this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+					XPP_API.PreviewPawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
 				}
 
 				// Remove genes which are selected.
-				foreach (var oldGene in this.pawn.genes.GenesListForReading.Where(x => genes.Select(y => y.geneDef).Contains(x.def)))
+				foreach (var oldGene in XPP_API.PreviewPawn.genes.GenesListForReading.Where(x => genes.Select(y => y.geneDef).Contains(x.def)))
 				{
-					this.pawn.genes.RemoveGene(oldGene);
-					this.pawn.story.traits.Notify_GeneRemoved(oldGene);
+					XPP_API.PreviewPawn.genes.RemoveGene(oldGene);
+					XPP_API.PreviewPawn.story.traits.Notify_GeneRemoved(oldGene);
 				}
 			}
 			else
 			{
 				// Remove genes which are on the preview, but not selected.
-				foreach (var oldGene in this.pawn.genes.GenesListForReading.Where(x => this.pawn.genes.GetGeneDefs().Except(genes).Select(y => y.geneDef).Contains(x.def)))
+				foreach (var oldGene in XPP_API.PreviewPawn.genes.GenesListForReading.Where(x => XPP_API.PreviewPawn.genes.GetGeneDefs().Except(genes).Select(y => y.geneDef).Contains(x.def)))
 				{
-					this.pawn.genes.RemoveGene(oldGene);
-					this.pawn.story.traits.Notify_GeneRemoved(oldGene);
+					XPP_API.PreviewPawn.genes.RemoveGene(oldGene);
+					XPP_API.PreviewPawn.story.traits.Notify_GeneRemoved(oldGene);
 				}
 
 				// Add genes which are selected, but not on the preview.
-				foreach (var newGene in genes.Except(this.pawn.genes.GetGeneDefs()))
+				foreach (var newGene in genes.Except(XPP_API.PreviewPawn.genes.GetGeneDefs()))
 				{
-					this.pawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
+					XPP_API.PreviewPawn.genes.AddGene(newGene.geneDef, newGene.isXenogene);
 				}
 			}
 
@@ -378,432 +255,11 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <summary>
-		/// Draws a summary of a <see cref="PawnCapacityDef"/>.
-		/// </summary>
-		/// <param name="rect">The <see cref="Rect"/> being targeted for drawing.</param>
-		/// <param name="curY">The current Y offset of this row.</param>
-		/// <param name="leftLabel">The label used to denote the <see cref="PawnCapacityDef"/> name.</param>
-		/// <param name="rightLabel">The label used to denote the <see cref="PawnCapacityDef"/> state.</param>
-		/// <param name="rightLabelColour">The colour applied to the <paramref name="rightLabel"/>.</param>
-		/// <param name="tipSignal">The tooltip displayed when hovering over this <see cref="PawnCapacityDef"/>.</param>
-		/// <remarks>
-		/// Emulation of the <see cref="HealthCardUtility"/>.DrawLeftRow private method.
-		/// </remarks>
-		protected static void DrawHealthCapacity(Rect rect, ref float curY, string leftLabel, string rightLabel, Color rightLabelColour, TipSignal tipSignal)
-		{
-			Rect rectListing = new Rect(MarginSmall, curY, rect.width - (MarginSmall * 2f), MarginSectionTitle);
-
-			if (Mouse.IsOver(rectListing))
-			{
-				using (new TextBlock(new Color(0.5f, 0.5f, 0.5f, 1f)))
-				{
-					GUI.DrawTexture(rectListing, TexUI.HighlightTex);
-				}
-			}
-
-			Text.Anchor = TextAnchor.MiddleLeft;
-			Widgets.Label(rectListing, leftLabel);
-
-			GUI.color = rightLabelColour;
-			Text.Anchor = TextAnchor.MiddleRight;
-			Widgets.Label(rectListing, rightLabel);
-
-			GUI.color = Color.white;
-			Text.Anchor = TextAnchor.UpperLeft;
-
-			if (Mouse.IsOver(rectListing))
-			{
-				TooltipHandler.TipRegion(rectListing, tipSignal);
-			}
-
-			curY += rectListing.height;
-		}
-
-		/// <summary>
-		/// Draws the pawn abilities segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnAbilities()
-		{
-			this.rectAbilities.y = this.rectSkills.yMax;
-			this.rectAbilities.height = MarginSectionTitle;
-
-			Color tmpColour = GUI.color;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectAbilities, "Abilities".Translate());
-			GUI.color = tmpColour;
-
-			this.rectAbilities.yMin = this.rectSkills.yMax + MarginSectionTitle;
-			this.rectAbilities.height = WindowButtonSmall.Size.y;
-
-			Rect result = GenUI.DrawElementStack(
-				rect: this.rectAbilities,
-				rowHeight: WindowButtonSmall.Size.y,
-				elements: this.pawn.abilities.abilities,
-				drawer: (background, element) =>
-				{
-					new WindowButtonSmall(
-						bounds: background,
-						callback: () => Find.WindowStack.Add(new Dialog_InfoCard(element.def)),
-						icon: element.def.uiIcon,
-						tooltip: element.Tooltip)
-					.DrawComponent();
-				},
-				widthGetter: x => WindowButtonSmall.Size.x,
-				rowMargin: MarginSmall,
-				elementMargin: MarginSmall,
-				allowOrderOptimization: true);
-
-			this.rectAbilities.height = result.height + MarginSmall;
-		}
-
-		/// <summary>
-		/// Draws the pawn backstory segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnBackstories()
-		{
-			this.rectBackstories.y = this.rectRender.yMax + MarginSmall;
-			this.rectBackstories.height = MarginSectionTitle;
-
-			Color tmpColour = GUI.color;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectBackstories, "Backstory".Translate());
-			GUI.color = tmpColour;
-
-			this.rectBackstories.y += MarginSectionTitle;
-
-			Widgets.Label(this.rectBackstories, this.pawn.def.LabelCap.ToString());
-
-			if (Mouse.IsOver(this.rectBackstories))
-			{
-				TooltipHandler.TipRegion(this.rectBackstories, this.pawn.def.description);
-			}
-
-			this.rectBackstories.y += MarginSectionTitle;
-
-			Widgets.Label(this.rectBackstories, this.pawn.MainDesc(false, true));
-
-			foreach (BackstorySlot bsSlot in Enum.GetValues(typeof(BackstorySlot)))
-			{
-				this.rectBackstories.y += MarginSectionTitle + MarginSmall;
-
-				BackstoryDef bsDef = this.pawn.story.GetBackstory(bsSlot);
-
-				if (bsDef == null)
-				{
-					continue;
-				}
-
-				string bsValueText = bsDef.TitleCapFor(this.pawn.gender);
-				Rect bsValueRect = new Rect(this.rectBackstories)
-				{
-					x = MarginKeyValues,
-					width = Text.CalcSize(bsValueText).x + MarginMedium,
-				};
-
-				Text.Anchor = TextAnchor.MiddleLeft;
-				Widgets.Label(this.rectBackstories, bsDef.slot.ToString().Translate());
-
-				GUI.color = CharacterCardUtility.StackElementBackground;
-				GUI.DrawTexture(bsValueRect, BaseContent.WhiteTex);
-				GUI.color = tmpColour;
-
-				Text.Anchor = TextAnchor.MiddleCenter;
-				Widgets.Label(bsValueRect, bsValueText.Truncate(bsValueRect.width));
-				Text.Anchor = TextAnchor.UpperLeft;
-
-				if (Mouse.IsOver(bsValueRect))
-				{
-					Widgets.DrawHighlight(bsValueRect);
-					TooltipHandler.TipRegion(bsValueRect, bsDef.FullDescriptionFor(this.pawn).Resolve());
-				}
-			}
-
-			this.rectBackstories.yMax += MarginSmall;
-		}
-
-		/// <summary>
-		/// Draws the pawn health segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnHealth()
-		{
-			Color tmpColour = GUI.color;
-			float curY = 0f;
-
-			this.rectHealth.x = ColumnWidth;
-			this.rectHealth.y = Mathf.Max(this.rectRender.yMax + MarginSmall, this.rectNeeds.yMax);
-			this.rectHealth.width = ColumnWidth;
-			this.rectHealth.yMax = this.rectAbilities.yMax;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectHealth, "Health".Translate());
-			GUI.color = tmpColour;
-
-			this.rectHealth.yMin += MarginSectionTitle;
-
-			Widgets.BeginGroup(this.rectHealth);
-
-			// Capacities
-			if (this.pawn.def.race.IsFlesh)
-			{
-				try
-				{
-					Pair<string, Color> painLabel = HealthCardUtility.GetPainLabel(this.pawn);
-					string painTip = HealthCardUtility.GetPainTip(this.pawn);
-					DrawHealthCapacity(
-						rect: this.rectHealth,
-						curY: ref curY,
-						leftLabel: "PainLevel".Translate(),
-						rightLabel: painLabel.First,
-						rightLabelColour: painLabel.Second,
-						tipSignal: painTip);
-				}
-				catch (Exception ex)
-				{
-					GUI.color = ColorLibrary.RedReadable;
-					Widgets.Label(this.rectHealth, $"ERROR: {ex.Message}");
-					GUI.color = tmpColour;
-
-					curY += MarginSectionTitle;
-				}
-			}
-
-			if (!this.pawn.Dead)
-			{
-				List<PawnCapacityDef> capacities = DefDatabase<PawnCapacityDef>.AllDefs
-					.Where(x => (this.pawn.def.race.Humanlike && x.showOnHumanlikes)
-							 || (this.pawn.def.race.Animal && x.showOnAnimals)
-							 || (this.pawn.def.race.IsAnomalyEntity && x.showOnAnomalyEntities)
-							 || (this.pawn.def.race.IsDrone && x.showOnDrones)
-							 || x.showOnMechanoids)
-					.OrderBy(x => x.listOrder)
-					.ToList();
-
-				foreach (var capacity in capacities)
-				{
-					try
-					{
-						Pair<string, Color> efficiencyLabel = HealthCardUtility.GetEfficiencyLabel(this.pawn, capacity);
-						DrawHealthCapacity(
-							rect: this.rectHealth,
-							curY: ref curY,
-							leftLabel: capacity.GetLabelFor(this.pawn).CapitalizeFirst(),
-							rightLabel: efficiencyLabel.First,
-							rightLabelColour: efficiencyLabel.Second,
-							tipSignal: HealthCardUtility.GetPawnCapacityTip(this.pawn, capacity));
-					}
-					catch (Exception ex)
-					{
-						GUI.color = ColorLibrary.RedReadable;
-						Widgets.Label(this.rectHealth, $"ERROR: {ex.Message}");
-						GUI.color = tmpColour;
-
-						curY += MarginSectionTitle;
-					}
-				}
-			}
-
-			Widgets.EndGroup(); // this.rectHealth
-
-			// Hediffs
-			this.rectHealth.xMin += MarginSmall;
-			this.rectHealth.xMax -= MarginSmall;
-			this.rectHealth.yMin += curY + MarginSectionTitle;
-			HealthCardUtility.DrawHediffListing(this.rectHealth, this.pawn, true);
-		}
-
-		/// <summary>
-		/// Draws the pawn needs segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnNeeds()
-		{
-			Color tmpColor = GUI.color;
-			float tmpX = this.rectNeeds.x;
-			float tmpWidth = this.rectNeeds.width;
-
-			this.rectNeeds.y = MarginSmall;
-			this.rectNeeds.height = MarginSectionTitle;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectNeeds, "TabNeeds".Translate());
-			GUI.color = tmpColor;
-
-			this.rectNeeds.y += MarginSectionTitle + MarginSmall;
-
-			try
-			{
-				foreach (var need in this.pawnNeeds)
-				{
-					this.rectNeeds.xMin += MarginSmall;
-
-					Text.Anchor = TextAnchor.MiddleLeft;
-					Widgets.Label(this.rectNeeds, need.LabelCap);
-					Text.Anchor = TextAnchor.UpperLeft;
-
-					this.needsLabelMaxX = Mathf.Max(this.needsLabelMaxX, Text.CalcSize(need.LabelCap).x + MarginSmall);
-					this.rectNeeds.xMin += this.needsLabelMaxX;
-					this.rectNeeds.xMax -= MarginSmall;
-
-					need.DrawOnGUI(rect: this.rectNeeds, customMargin: 0f, drawArrows: false, drawLabel: false);
-
-					this.rectNeeds.x = tmpX;
-					this.rectNeeds.y += MarginSectionTitle;
-					this.rectNeeds.width = tmpWidth;
-					this.rectNeeds.height = MarginSectionTitle;
-				}
-			}
-			catch (Exception) // For some reason, a NRE started being thrown when the window is closed, so this tells it to shut up.
-			{
-			}
-		}
-
-		/// <summary>
-		/// Draws the pawn rendering segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnRender()
-		{
-			this.rectRender.x = 0f;
-			this.rectRender.y = this.rectSettings.yMax;
-			this.rectRender.width = PawnPreviewSize;
-			this.rectRender.height = PawnPreviewSize;
-
-			GUI.DrawTexture(this.rectRender, this.texPawnRender);
-
-			this.rectRender.xMin = MarginSmall;
-			this.rectRender.xMax = ColumnWidth - MarginSmall;
-			this.rectRender.yMin = this.rectRender.yMax - WindowButtonSmall.Size.y;
-
-			this.buttonRenderRotate.Bounds.x = this.rectRender.x;
-			this.buttonRenderRotate.Bounds.y = this.rectRender.y;
-			this.buttonRenderRotate.DrawComponent();
-
-			this.rectRender.xMin += WindowButtonSmall.Size.x + MarginSmall;
-
-			this.buttonRenderSoundPlayer.Bounds.x = this.rectRender.x;
-			this.buttonRenderSoundPlayer.Bounds.y = this.rectRender.y;
-			this.buttonRenderSoundPlayer.DrawComponent();
-
-			this.rectRender.xMin += WindowButtonSmall.Size.x + MarginSmall;
-
-			if (Mouse.IsOver(this.rectRender))
-			{
-				TooltipHandler.TipRegion(this.rectRender, "Karda.XPP.Render.Zoom.Slider.Tooltip".Translate());
-			}
-
-			float newZoom = Widgets.HorizontalSlider(this.rectRender, this.renderZoom, 0.1f, 2f, label: $"{"Karda.XPP.Render.Zoom.Slider.Label".Translate()}: {this.renderZoom:F1}x", roundTo: 0.1f);
-
-			if (newZoom != this.renderZoom)
-			{
-				this.renderZoom = newZoom;
-				this.refreshRequired = true;
-			}
-		}
-
-		/// <summary>
-		/// Draws the pawn skills segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnSkills()
-		{
-			Color tmpColour = GUI.color;
-
-			this.rectSkills.y = this.rectTraits.yMax;
-			this.rectSkills.height = (MarginSectionTitle + MarginSmall) * DefDatabase<SkillDef>.AllDefsListForReading.Count;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectSkills, "Skills".Translate());
-			GUI.color = tmpColour;
-
-			this.rectSkills.yMin = this.rectTraits.yMax + MarginSectionTitle + MarginSmall;
-
-			SkillUI.DrawSkillsOf(this.pawn, this.rectSkills.position, SkillUI.SkillDrawMode.Menu, this.rectSkills);
-		}
-
-		/// <summary>
-		/// Draws the pawn traits segment of the preview window.
-		/// </summary>
-		protected virtual void DrawPawnTraits()
-		{
-			Color tmpColour = GUI.color;
-
-			this.rectTraits.y = this.rectBackstories.yMax;
-
-			GUI.color = Color.yellow;
-			Widgets.Label(this.rectTraits, "Traits".Translate());
-			GUI.color = tmpColour;
-
-			this.rectTraits.yMin = this.rectBackstories.yMax + MarginSectionTitle;
-
-			Rect rectTraitsStack = GenUI.DrawElementStack(
-				rect: this.rectTraits,
-				rowHeight: MarginSectionTitle,
-				elements: this.pawn.story.traits.TraitsSorted,
-				drawer: (r, t) =>
-				{
-					GUI.color = CharacterCardUtility.StackElementBackground;
-					GUI.DrawTexture(r, BaseContent.WhiteTex);
-					GUI.color = tmpColour;
-
-					if (Mouse.IsOver(r))
-					{
-						Widgets.DrawHighlight(r);
-					}
-
-					if (t.Suppressed)
-					{
-						GUI.color = ColoredText.SubtleGrayColor;
-					}
-					else if (t.sourceGene != null)
-					{
-						GUI.color = ColoredText.GeneColor;
-					}
-
-					Widgets.Label(new Rect(r.x + MarginSmall, r.y, r.width + (MarginSmall * 2f), r.height), t.LabelCap);
-					GUI.color = tmpColour;
-
-					if (Mouse.IsOver(r))
-					{
-						TooltipHandler.TipRegion(r, t.TipString(this.pawn));
-					}
-				},
-				widthGetter: x => Text.CalcSize(x.LabelCap).x + (MarginSmall * 2f),
-				allowOrderOptimization: false);
-
-			this.rectTraits.height = rectTraitsStack.height + (MarginSmall * 2f);
-		}
-
-		/// <summary>
-		/// Draws the settings button segment of the preview window.
-		/// </summary>
-		protected virtual void DrawSettings()
-		{
-			GenUI.DrawElementStack(
-				rect: this.rectSettings.ContractedBy(MarginSmall),
-				rowHeight: WindowButtonSmall.Size.y,
-				elements: new List<WindowButtonSmall>()
-				{
-					this.buttonSettingsSettings,
-					this.buttonSettingsNew,
-					this.buttonSettingsClear,
-					this.buttonSettingsInfo,
-				},
-				drawer: (background, element) =>
-				{
-					element.Bounds = background;
-					element.DrawComponent();
-				},
-				widthGetter: x => WindowButtonSmall.Size.x,
-				rowMargin: MarginSmall,
-				elementMargin: MarginSmall,
-				allowOrderOptimization: false);
-		}
-
-		/// <summary>
 		/// Clears all information about the currently rendered pawn.
 		/// </summary>
-		protected virtual void PawnClear()
+		public virtual void PawnClear()
 		{
-			this.pawn.ClearData();
+			XPP_API.PreviewPawn.ClearData();
 			this.UpdateGenes();
 
 			this.refreshRequired = true;
@@ -812,23 +268,23 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Destroys and cleans up the currently active <see cref="Pawn"/>.
 		/// </summary>
-		protected virtual void PawnDestroy()
+		public virtual void PawnDestroy()
 		{
-			if (this.pawn != null)
+			if (XPP_API.PreviewPawn != null)
 			{
-				if (this.pawn.Spawned)
+				if (XPP_API.PreviewPawn.Spawned)
 				{
-					this.pawn.DeSpawn();
+					XPP_API.PreviewPawn.DeSpawn();
 				}
 				else
 				{
-					this.pawn.Destroy();
+					XPP_API.PreviewPawn.Destroy();
 				}
 
-				Find.World?.worldPawns.RemoveAndDiscardPawnViaGC(this.pawn);
+				Find.World?.worldPawns.RemoveAndDiscardPawnViaGC(XPP_API.PreviewPawn);
 			}
 
-			this.pawn = null;
+			XPP_API.PreviewPawn = null;
 
 			this.refreshRequired = true;
 		}
@@ -837,7 +293,7 @@ namespace Karda.XenoPawnPreview
 		/// Attempts to generate a new <see cref="Pawn"/> and apply it as the target of this <see cref="PreviewWindow"/>.
 		/// </summary>
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
-		protected virtual bool PawnGenerate()
+		public virtual bool PawnGenerate()
 		{
 			if (this.originalPawnOnly)
 			{
@@ -849,34 +305,34 @@ namespace Karda.XenoPawnPreview
 			try
 			{
 				HarmonyPatches_Core.PrepareGeneration = true;
-				this.pawn = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer);
+				XPP_API.PreviewPawn = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer);
 
-				this.pawn.apparel = new Pawn_ApparelTracker(this.pawn);
-				this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
+				XPP_API.PreviewPawn.apparel = new Pawn_ApparelTracker(XPP_API.PreviewPawn);
+				XPP_API.PreviewPawn.ideo = new Pawn_IdeoTracker(XPP_API.PreviewPawn);
 			}
 			catch (Exception ex)
 			{
 				Log.Error($"[XPP] Exception whilst generating a new pawn. Generating a minimal pawn instead.\n{ex}");
 
-				this.pawn = PawnUtility.GenerateMinimalPawn();
+				XPP_API.PreviewPawn = PawnUtility.GenerateMinimalPawn();
 			}
 
 			this.UpdateGenes();
 			this.refreshRequired = true;
 
-			return this.pawn != null;
+			return XPP_API.PreviewPawn != null;
 		}
 
 		/// <summary>
-		/// Attempts to regenerate the <see cref="pawnOriginal"/> and apply it as the target of the preview window.
+		/// Attempts to regenerate the <see cref="XPP_API.BasePawn"/> and apply it as the target of the preview window.
 		/// </summary>
 		/// <param name="request">The optional request to use for a pawn.</param>
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
-		protected virtual bool PawnRegenerate()
+		public virtual bool PawnRegenerate()
 		{
 			this.PawnDestroy();
 
-			if (this.pawnOriginal == null)
+			if (XPP_API.BasePawn == null)
 			{
 				this.PawnGenerate();
 			}
@@ -884,87 +340,27 @@ namespace Karda.XenoPawnPreview
 			{
 				try
 				{
-					this.pawn = Find.PawnDuplicator.Duplicate(this.pawnOriginal.PrepareSafely());
+					XPP_API.PreviewPawn = Find.PawnDuplicator.Duplicate(XPP_API.BasePawn.PrepareSafely());
 
-					this.pawn.ideo = new Pawn_IdeoTracker(this.pawn);
+					XPP_API.PreviewPawn.ideo = new Pawn_IdeoTracker(XPP_API.PreviewPawn);
 				}
 				catch (Exception ex)
 				{
-					Log.Error($"[XPP] Exception whilst duplicating {this.pawnOriginal}. Generating a minimal pawn instead.\n{ex}");
+					Log.Error($"[XPP] Exception whilst duplicating {XPP_API.BasePawn}. Generating a minimal pawn instead.\n{ex}");
 
-					this.pawn = PawnUtility.GenerateMinimalPawn();
+					XPP_API.PreviewPawn = PawnUtility.GenerateMinimalPawn();
 				}
 			}
 
 			this.UpdateGenes();
 			this.refreshRequired = true;
 
-			return this.pawn != null;
+			return XPP_API.PreviewPawn != null;
 		}
 
 		/// <summary>
-		/// Refreshes the window with the new state of the pawn.
+		/// Requests a refresh of the window.
 		/// </summary>
-		protected virtual void RefreshWindow()
-		{
-			foreach (var stat in DefDatabase<StatDef>.AllDefsListForReading.Where(x => x.Worker.ShouldShowFor(StatRequest.For(this.pawn))))
-			{
-				stat.Worker.TryClearCache();
-			}
-
-			// Render
-			this.pawn.Drawer.renderer.EnsureGraphicsInitialized();
-			this.pawn.Drawer.renderer.SetAllGraphicsDirty();
-			PawnCacheCameraManager.PawnCacheRenderer.RenderPawn(this.pawn, this.texPawnRender, Vector3.zero, this.renderZoom, 0f, this.renderAngle);
-
-			// Skills
-			this.rectSkills.height = MarginLarge + (this.pawn.skills.skills.Count * (SkillUI.SkillHeight + SkillUI.SkillYSpacing));
-
-			// Needs
-			this.pawn.needs.AddOrRemoveNeedsAsAppropriate();
-			this.pawnNeeds = this.pawn.needs.AllNeeds
-				.Where(x => x.ShowOnNeedList || x is Need_Mood)
-				.OrderByDescending(y => y.def.listPriority)
-				.ToHashSet();
-
-			// Health
-			foreach (var hediff in this.pawn.health.hediffSet.hediffs)
-			{
-				this.pawn.health.Notify_HediffChanged(hediff);
-			}
-
-			this.refreshRequired = false;
-		}
-
-		/// <summary>
-		/// Rotates the currently rendered pawn.
-		/// </summary>
-		protected virtual void RotateRender()
-		{
-			switch (this.renderAngle.AsInt)
-			{
-				// South -> West
-				case 0:
-					this.renderAngle = Rot4.West;
-					break;
-
-				// West -> North
-				case 1:
-					this.renderAngle = Rot4.North;
-					break;
-
-				// North -> East
-				case 2:
-					this.renderAngle = Rot4.East;
-					break;
-
-				// East / Other -> South
-				default:
-					this.renderAngle = Rot4.South;
-					break;
-			}
-
-			this.refreshRequired = true;
-		}
+		public void RequestRefresh() => this.refreshRequired = true;
 	}
 }

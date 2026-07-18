@@ -16,6 +16,10 @@
 	<Karda.XPP.Settings.Window.Standalone.Label>Toggle standalone window</Karda.XPP.Settings.Window.Standalone.Label>
 	<Karda.XPP.Settings.Window.Standalone.Tooltip>When enabled, the preview window will be movable and not constrained to the right side of the gene picker window.</Karda.XPP.Settings.Window.Standalone.Tooltip>
 	
+	<!-- Interface -->
+	<Karda.XPP.Interface.Section.Collapse>Collapse section</Karda.XPP.Interface.Section.Collapse>
+	<Karda.XPP.Interface.Section.Expand>Expand section</Karda.XPP.Interface.Section.Expand>
+	
 	<!-- Controller -->
 	<Karda.XPP.Controller.Settings.Button>Open the mod settings window.</Karda.XPP.Controller.Settings.Button>
 	<Karda.XPP.Controller.Pawn.Button.New>Create a new Pawn.</Karda.XPP.Controller.Pawn.Button.New>
@@ -35,5 +39,11 @@
   <!-- Backstories -->
 	<Karda.XPP.Pawn.Backstory.None.Desc>[PAWN_nameDef] has no backstory.</Karda.XPP.Pawn.Backstory.None.Desc>
 	<Karda.XPP.Pawn.Backstory.None.Name>No Backstory</Karda.XPP.Pawn.Backstory.None.Name>
+	
+	<!-- Abilities -->
+	<Karda.XPP.Abilities.None.Label>No Abilities</Karda.XPP.Abilities.None.Label>
+	
+	<!-- Traits -->
+	<Karda.XPP.Traits.None.Label>No Traits</Karda.XPP.Traits.None.Label>
 	
 </LanguageData>

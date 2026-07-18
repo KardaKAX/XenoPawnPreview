@@ -60,21 +60,11 @@ namespace Karda.XenoPawnPreview
 		public static Vector2 OriginalWindowPosition { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the current <see cref="XenoPawnPreview.PreviewWindow"/> instance.
-		/// </summary>
-		private static PreviewWindow PreviewWindow { get; set; }
-
-		/// <summary>
-		/// Gets or sets the currently targeted <see cref="GeneCreationDialogBase"/> window.
-		/// </summary>
-		private static GeneCreationDialogBase TargetWindow { get; set; }
-
-		/// <summary>
 		/// Postfixes the <see cref="Dialog_CreateXenotype.OnGenesChanged"/> method to register updates when the player changes genes.
 		/// </summary>
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
 		/// <remarks>This method is patched on every instance of a <see cref="GeneCreationDialogBase"/>.</remarks>
-		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(TargetWindow.GetSelectedGenes());
+		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(XPP_API.BaseWindow.GetSelectedGenes());
 
 		/// <summary>
 		/// Prefixes the <see cref="Need_Food.MaxLevel"/> property getter to enable the full need display outside of a playing program state.
@@ -117,7 +107,6 @@ namespace Karda.XenoPawnPreview
 		{
 			if (__instance is GeneCreationDialogBase)
 			{
-				PreviewWindow?.Close(false);
 				CloseGracefully();
 			}
 		}
@@ -133,7 +122,7 @@ namespace Karda.XenoPawnPreview
 			if (__instance is GeneCreationDialogBase gcdbInstance)
 			{
 				gcdbInstance.absorbInputAroundWindow = false;
-				TargetWindow = gcdbInstance;
+				XPP_API.BaseWindow = gcdbInstance;
 				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				// Create a temporary world if one doesn't exist.
@@ -275,7 +264,7 @@ namespace Karda.XenoPawnPreview
 
 				if (WindowType != CompatibilityUtility.WindowType.Undisplayed && !Find.WindowStack.IsOpen(typeof(PreviewWindow)))
 				{
-					Find.WindowStack.Add(PreviewWindow = new PreviewWindow(gcdbInstance, TargetWindow.GetSelectedPawn()));
+					Find.WindowStack.Add(XPP_API.PreviewWindow = new PreviewWindow(gcdbInstance.GetSelectedPawn()));
 				}
 			}
 		}
@@ -302,9 +291,9 @@ namespace Karda.XenoPawnPreview
 		/// <param name="errorMessage">The error message to be displayed after failure.</param>
 		private static void CloseGracefully(string errorMessage = "")
 		{
-			TargetWindow = null;
-			PreviewWindow?.Close();
-			PreviewWindow = null;
+			XPP_API.BaseWindow = null;
+			XPP_API.PreviewWindow?.Close(false);
+			XPP_API.PreviewWindow = null;
 
 			if (genStage.HasFlag(WorldGenPart.Game))
 			{
