@@ -28,6 +28,7 @@ namespace Karda.XenoPawnPreview
 			new WindowSection_Skills(),
 			new WindowSection_Abilities(),
 			new WindowSection_Needs(),
+			new WindowSection_Resources(),
 			new WindowSection_Health(),
 		};
 
@@ -131,7 +132,7 @@ namespace Karda.XenoPawnPreview
 				if (curSectionRect.yMax + (lastSection?.Bounds.height ?? 0f) >= this.MaxHeight)
 				{
 					curSectionRect.y = 0f;
-					curSectionRect.x += curWidth;
+					curSectionRect.x += curWidth + XPP_API.MarginElements;
 					curWidth = 0f;
 				}
 				else

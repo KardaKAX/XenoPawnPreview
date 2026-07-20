@@ -46,4 +46,7 @@
 	<!-- Traits -->
 	<Karda.XPP.Traits.None.Label>No Traits</Karda.XPP.Traits.None.Label>
 	
+	<!-- Resources -->
+	<Karda.XPP.Resources.Label>Resources</Karda.XPP.Resources.Label>
+	
 </LanguageData>

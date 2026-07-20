@@ -74,6 +74,7 @@
     <Compile Include="Script\Content\Widgets\WindowSection_Abilities.cs" />
     <Compile Include="Script\Content\Widgets\WindowSection_Needs.cs" />
     <Compile Include="Script\Content\Widgets\WindowSection_Health.cs" />
+    <Compile Include="Script\Content\Widgets\WindowSection_Resources.cs" />
     <Compile Include="Script\Content\Widgets\WindowSection_Skills.cs" />
     <Compile Include="Script\Content\Widgets\WindowSection_Traits.cs" />
     <Compile Include="Script\Content\Widgets\WindowSection_Backstories.cs" />
