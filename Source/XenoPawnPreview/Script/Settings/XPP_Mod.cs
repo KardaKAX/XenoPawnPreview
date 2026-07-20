@@ -67,9 +67,16 @@ namespace Karda.XenoPawnPreview
 			}
 
 			SettingsListing.Label(string.Empty);
-			SettingsListing.Label("Karda.XPP.Settings.Patch.Category".Translate());
-			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.BigAndSmall.Label".Translate(), ref XPP_API.Settings.PatchBigAndSmall, "Karda.XPP.Settings.Patch.BigAndSmall.Tooltip".Translate());
-			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.IdeoFactIcon.Label".Translate(), ref XPP_API.Settings.PatchIdeoFactIcon, "Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip".Translate());
+			SettingsListing.Label("Karda.XPP.Settings.Pawn.Category".Translate());
+			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Pawn.Minimal.Label".Translate(), ref XPP_API.Settings.PawnGenerateMinimal, $"{"Karda.XPP.Settings.Pawn.Minimal.Tooltip".Translate()}\n\n{"Karda.XPP.Settings.Pawn.Minimal.Tooltip.2".Translate()}");
+
+			if (Prefs.DevMode)
+			{
+				SettingsListing.Label(string.Empty);
+				SettingsListing.Label("Karda.XPP.Settings.Patch.Category".Translate());
+				SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.BigAndSmall.Label".Translate(), ref XPP_API.Settings.PatchBigAndSmall, "Karda.XPP.Settings.Patch.BigAndSmall.Tooltip".Translate());
+				SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.IdeoFactIcon.Label".Translate(), ref XPP_API.Settings.PatchIdeoFactIcon, "Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip".Translate());
+			}
 
 			SettingsListing.End();
 		}

@@ -9,6 +9,12 @@
 	<Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>Toggle patching Big and Small compatibility with this mod.</Karda.XPP.Settings.Patch.BigAndSmall.Tooltip>
 	<Karda.XPP.Settings.Patch.IdeoFactIcon.Label>Patch Ideoligion Icon as Faction Icon</Karda.XPP.Settings.Patch.IdeoFactIcon.Label>
 	<Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>Toggle patching Ideoligion Icon as Faction Icon compatibility with this mod.</Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip>
+
+	<Karda.XPP.Settings.Pawn.Category>Pawn Settings</Karda.XPP.Settings.Pawn.Category>
+	<Karda.XPP.Settings.Pawn.Minimal.Label>Generate Minimal Pawns</Karda.XPP.Settings.Pawn.Minimal.Label>
+	<Karda.XPP.Settings.Pawn.Minimal.Tooltip>Always generate a minimal pawn, bypassing the standard Rimworld generation method.</Karda.XPP.Settings.Pawn.Minimal.Tooltip>
+	<Karda.XPP.Settings.Pawn.Minimal.Tooltip.2>Warning: Some mods may break using this method. Use at your own risk.</Karda.XPP.Settings.Pawn.Minimal.Tooltip.2>
+
 	<Karda.XPP.Settings.Window.Category>Window Settings</Karda.XPP.Settings.Window.Category>
 	<Karda.XPP.Settings.Window.OffsetX.Label>Horizontal window offset</Karda.XPP.Settings.Window.OffsetX.Label>
 	<Karda.XPP.Settings.Window.OffsetY.Label>Vertical window offset</Karda.XPP.Settings.Window.OffsetY.Label>

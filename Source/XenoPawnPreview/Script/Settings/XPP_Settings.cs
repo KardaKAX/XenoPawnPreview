@@ -30,7 +30,7 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Determines if the mod should always generate a 'minimal' pawn.
 		/// </summary>
-		//public bool PawnGenerateMinimal = false;
+		public bool PawnGenerateMinimal = false;
 
 		/// <summary>
 		/// The maximum height multiplier of the preview window compared to the base editor.
@@ -55,7 +55,7 @@ namespace Karda.XenoPawnPreview
 		{
 			Scribe_Values.Look(ref this.PatchBigAndSmall, "PatchBigAndSmall");
 			Scribe_Values.Look(ref this.PatchIdeoFactIcon, "PatchIdeoFactIcon");
-			//Scribe_Values.Look(ref this.PawnGenerateMinimal, "PawnGenerateMinimal");
+			Scribe_Values.Look(ref this.PawnGenerateMinimal, "PawnGenerateMinimal");
 			Scribe_Values.Look(ref this.WindowOffset, "WindowOffset");
 			Scribe_Values.Look(ref this.WindowStandalone, "WindowStandalone");
 		}

@@ -296,6 +296,20 @@ namespace Karda.XenoPawnPreview
 		/// <returns><see langword="true"/> if a new <see cref="Pawn"/> was successfully generated.</returns>
 		public virtual bool PawnGenerate()
 		{
+			if (XPP_API.Settings.PawnGenerateMinimal)
+			{
+				try
+				{
+					XPP_API.PreviewPawn = PawnUtility.GenerateMinimalPawn();
+
+					return true;
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"[XPP] Exception whilst trying to generate a minimal pawn. Trying again with a regular pawn.\n{ex}");
+				}
+			}
+
 			if (this.originalPawnOnly)
 			{
 				return this.PawnRegenerate();
