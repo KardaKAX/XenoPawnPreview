@@ -89,7 +89,7 @@ namespace Karda.XenoPawnPreview
 			}
 
 			// Set window transforms.
-			XPP_API.BaseWindow.windowRect.position = new Vector2((Screen.width / 2f) - (XPP_API.BaseWindow.windowRect.width / 2f), (Screen.height / 2f) - (XPP_API.BaseWindow.windowRect.height / 2f)) + XPP_API.Settings.WindowOffset;
+			XPP_API.BaseWindow.windowRect.position = new Vector2((UI.screenWidth - XPP_API.BaseWindow.windowRect.width) / 2f, (UI.screenHeight - XPP_API.BaseWindow.windowRect.height) / 2f) + (XPP_API.Settings.WindowOffset / Prefs.UIScale);
 
 			if (!XPP_API.Settings.WindowStandalone)
 			{
