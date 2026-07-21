@@ -63,9 +63,7 @@
 					if (state)
 					{
 						this.buttonVox.Tooltip =
-						string.Format("Karda.XPP.Render.Sound.Play.Button".Translate(), this.soundTypeOptions[this.soundTypeIndex].Label.Colorize(ColoredText.NameColor)) +
-						"\n\n" +
-						"Karda.XPP.Render.Sound.Play.Button.2".Translate();
+						$"{string.Format("Karda.XPP.Render.Sound.Play.Button".Translate(), this.soundTypeOptions[this.soundTypeIndex].Label.Colorize(ColoredText.NameColor))}\n\n{"Karda.XPP.Render.Sound.Play.Button.2".Translate()}";
 					}
 				},
 				Options = this.soundTypeOptions,
