@@ -6,7 +6,6 @@ namespace Karda.XenoPawnPreview
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using BigAndSmall;
 	using HarmonyLib;
 	using RimWorld;
 	using UnityEngine;
@@ -86,7 +85,7 @@ namespace Karda.XenoPawnPreview
 		{
 			if (Find.UIRoot is UIRoot_Entry)
 			{
-				__result = HumanoidPawnScaler.GetCache(pawn, true);
+				__result = AccessTools.Method("HumanoidPawnScaler:GetCache").Invoke(null, new object[] { pawn, true });
 				return false;
 			}
 
