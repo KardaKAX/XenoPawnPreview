@@ -70,6 +70,10 @@ namespace Karda.XenoPawnPreview
 			SettingsListing.Label("Karda.XPP.Settings.Pawn.Category".Translate());
 			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Pawn.Minimal.Label".Translate(), ref XPP_API.Settings.PawnGenerateMinimal, $"{"Karda.XPP.Settings.Pawn.Minimal.Tooltip".Translate()}\n\n{"Karda.XPP.Settings.Pawn.Minimal.Tooltip.2".Translate()}");
 
+			SettingsListing.Label(string.Empty);
+			SettingsListing.Label("Karda.XPP.Settings.Sections.Category".Translate());
+			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Sections.Resources.UnderBar.Label".Translate(), ref XPP_API.Settings.ResourceValuesCompact, "Karda.XPP.Settings.Sections.Resources.UnderBar.Tooltip".Translate());
+
 			if (Prefs.DevMode)
 			{
 				SettingsListing.Label(string.Empty);

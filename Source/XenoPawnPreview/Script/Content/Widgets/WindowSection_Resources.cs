@@ -107,8 +107,15 @@
 			float resourceDrain = GetDrainSources(gene).Sum(x => x.ResourceLossPerDay) * -100f;
 			Rect boundsBarText = new Rect(boundsBar.ExpandedBy(ResourceBorderSize)) { xMin = boundsBar.xMin + ResourceBorderSize, xMax = boundsBar.xMax - ResourceBorderSize };
 
+			if (!XPP_API.Settings.ResourceValuesCompact)
+			{
+				boundsRow.yMax += Text.LineHeight * 0.75f;
+				boundsBarText.yMin = boundsBar.yMax + ResourceBorderSize;
+				boundsBarText.yMax = boundsRow.yMax;
+			}
+
 			Text.Font = GameFont.Tiny;
-			GUI.color = resourceColour.grayscale > 0.9f ? Color.black : Color.white;
+			GUI.color = XPP_API.Settings.ResourceValuesCompact ? (resourceColour.grayscale > 0.9f ? Color.black : Color.white) : Color.white;
 			Text.Anchor = TextAnchor.MiddleLeft;
 			Widgets.Label(boundsBarText, $"{gene.ValueForDisplay}/{gene.MaxForDisplay}");
 

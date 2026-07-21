@@ -33,6 +33,11 @@ namespace Karda.XenoPawnPreview
 		public bool PawnGenerateMinimal = false;
 
 		/// <summary>
+		/// Determines if the values associated with the resource section should be displayed under the bar, rather than inside.
+		/// </summary>
+		public bool ResourceValuesCompact = false;
+
+		/// <summary>
 		/// The maximum height multiplier of the preview window compared to the base editor.
 		/// </summary>
 		public float WindowHeightMax = 0.8f;
@@ -55,7 +60,11 @@ namespace Karda.XenoPawnPreview
 		{
 			Scribe_Values.Look(ref this.PatchBigAndSmall, "PatchBigAndSmall");
 			Scribe_Values.Look(ref this.PatchIdeoFactIcon, "PatchIdeoFactIcon");
+
 			Scribe_Values.Look(ref this.PawnGenerateMinimal, "PawnGenerateMinimal");
+
+			Scribe_Values.Look(ref this.ResourceValuesCompact, "ResourceValuesCompact");
+
 			Scribe_Values.Look(ref this.WindowOffset, "WindowOffset");
 			Scribe_Values.Look(ref this.WindowStandalone, "WindowStandalone");
 		}
