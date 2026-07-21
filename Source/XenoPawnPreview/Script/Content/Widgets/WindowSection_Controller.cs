@@ -1,4 +1,6 @@
-﻿namespace Karda.XenoPawnPreview
+﻿// Copyright KardaKAX - GNU GPLv3.
+
+namespace Karda.XenoPawnPreview
 {
 	using System.Collections.Generic;
 	using System.Linq;
