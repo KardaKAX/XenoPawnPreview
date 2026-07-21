@@ -140,9 +140,13 @@ namespace Karda.XenoPawnPreview
 		/// <inheritdoc/>
 		protected override Vector2 DrawContents()
 		{
-			float curY = 0f;
+			if (this.resourceGenes.NullOrEmpty())
+			{
+				Widgets.NoneLabelCenteredVertically(this.BoundsContents, $"[{"Karda.XPP.Resources.None.Label".Translate()}]");
+				return this.DesiredContentSize;
+			}
 
-			// Psycasts, Mechanators etc. - Display in list when hediff is active, show linked statworkers as values.
+			float curY = 0f;
 
 			foreach (var resource in this.resourceGenes)
 			{

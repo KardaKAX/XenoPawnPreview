@@ -58,5 +58,6 @@
 	
 	<!-- Resources -->
 	<Karda.XPP.Resources.Label>Resources</Karda.XPP.Resources.Label>
+	<Karda.XPP.Resources.None.Label>No Resources</Karda.XPP.Resources.None.Label>
 	
 </LanguageData>
