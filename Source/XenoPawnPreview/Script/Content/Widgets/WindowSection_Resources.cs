@@ -129,7 +129,7 @@
 			if (Mouse.IsOver(boundsRow))
 			{
 				Widgets.DrawHighlight(boundsRow);
-				TooltipHandler.TipRegion(boundsRow, gene.def.resourceDescription);
+				TooltipHandler.TipRegion(boundsRow, gene.def.resourceDescription.Formatted(XPP_API.PreviewPawn.Named("PAWN")).Resolve());
 			}
 
 			curY += boundsRow.height + XPP_API.MarginElements;
