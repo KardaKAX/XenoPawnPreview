@@ -54,11 +54,6 @@ namespace Karda.XenoPawnPreview
 		public static bool PrepareGeneration { private get; set; }
 
 		/// <summary>
-		/// Gets the original <see cref="Rect.position"/> of the displayed <see cref="GeneCreationDialogBase"/> <see cref="Window"/>.
-		/// </summary>
-		public static Vector2 OriginalWindowPosition { get; private set; }
-
-		/// <summary>
 		/// Postfixes the <see cref="Dialog_CreateXenotype.OnGenesChanged"/> method to register updates when the player changes genes.
 		/// </summary>
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
@@ -122,7 +117,6 @@ namespace Karda.XenoPawnPreview
 			{
 				gcdbInstance.absorbInputAroundWindow = false;
 				XPP_API.BaseWindow = gcdbInstance;
-				OriginalWindowPosition = gcdbInstance.windowRect.position;
 
 				// Create a temporary world if one doesn't exist.
 				if (Current.ProgramState == ProgramState.Entry)

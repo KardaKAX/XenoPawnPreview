@@ -69,7 +69,7 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Gets the maximum height of this window, in pixels.
 		/// </summary>
-		public float MaxHeight { get => XPP_API.BaseWindow.windowRect.height * XPP_API.Settings.WindowHeightMax; }
+		public float MaxHeight { get => Screen.height * XPP_API.Settings.WindowHeightMax; }
 
 		/// <summary>
 		/// Gets the pixel margin to the edge of the screen.
@@ -89,7 +89,7 @@ namespace Karda.XenoPawnPreview
 			}
 
 			// Set window transforms.
-			XPP_API.BaseWindow.windowRect.position = HarmonyPatches_Core.OriginalWindowPosition + XPP_API.Settings.WindowOffset;
+			XPP_API.BaseWindow.windowRect.position = new Vector2((Screen.width / 2f) - (XPP_API.BaseWindow.windowRect.width / 2f), (Screen.height / 2f) - (XPP_API.BaseWindow.windowRect.height / 2f)) + XPP_API.Settings.WindowOffset;
 
 			if (!XPP_API.Settings.WindowStandalone)
 			{
