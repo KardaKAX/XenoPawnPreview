@@ -24,6 +24,11 @@ namespace Karda.XenoPawnPreview
 		{
 		}
 
+		/// <summary>
+		/// Gets the hediff listing height value.
+		/// </summary>
+		public static float HediffListingHeight { get; internal set; }
+
 		/// <inheritdoc/>
 		public override Vector2 DesiredContentSize => new Vector2(MinWidth, MinHeight);
 
@@ -145,8 +150,9 @@ namespace Karda.XenoPawnPreview
 
 			curY += XPP_API.MarginElements;
 
-			// Stopgap height because getting the correct listing height is more effort than it's worth.
-			Rect hediffRect = new Rect(0f, curY, MinWidth, Text.LineHeight * (this.hediffCount + 2));
+			Rect hediffRect = new Rect(0f, curY, MinWidth, Text.LineHeight + (XPP_API.PreviewPawn.health.hediffSet.hediffs.Count > 0 ? HediffListingHeight : Text.LineHeight));
+
+			Log.Message($"{XPP_API.PreviewPawn.health.hediffSet.hediffs.Count} {hediffRect.height}");
 
 			try
 			{

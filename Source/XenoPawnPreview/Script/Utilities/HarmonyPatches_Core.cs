@@ -5,6 +5,8 @@ namespace Karda.XenoPawnPreview
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Reflection;
+	using System.Reflection.Emit;
 	using HarmonyLib;
 	using RimWorld;
 	using RimWorld.Planet;
@@ -59,6 +61,29 @@ namespace Karda.XenoPawnPreview
 		/// <param name="__instance">The <see cref="Dialog_CreateXenotype"/> instance that opened.</param>
 		/// <remarks>This method is patched on every instance of a <see cref="GeneCreationDialogBase"/>.</remarks>
 		public static void GeneCreationDialogBase_OnGenesChanged() => GenesChanged?.Invoke(XPP_API.BaseWindow.GetSelectedGenes());
+
+		/// <summary>
+		/// Transpiles the <see cref="HealthCardUtility"/>.DrawHediffListing method to output the final Y offset after drawing.
+		/// </summary>
+		/// <param name="instructions">The current instruction set.</param>
+		/// <returns>The updated instruction set.</returns>
+		[HarmonyTranspiler]
+		[HarmonyPatch(typeof(HealthCardUtility), "DrawHediffListing")]
+		public static IEnumerable<CodeInstruction> HealthCardUtility_DrawHediffListing(IEnumerable<CodeInstruction> instructions)
+		{
+			List<CodeInstruction> instructionsList = instructions.ToList();
+
+			for (int i = 0; i < instructionsList.Count; i++)
+			{
+				if (i == instructionsList.Count - 1)
+				{
+					yield return new CodeInstruction(OpCodes.Ldloc_S, 5);
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertySetter(typeof(WindowSection_Health), nameof(WindowSection_Health.HediffListingHeight)));
+				}
+
+				yield return instructionsList[i];
+			}
+		}
 
 		/// <summary>
 		/// Prefixes the <see cref="Need_Food.MaxLevel"/> property getter to enable the full need display outside of a playing program state.
