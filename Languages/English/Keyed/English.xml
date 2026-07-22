@@ -20,6 +20,8 @@
 	<Karda.XPP.Settings.Sections.Resources.UnderBar.Tooltip>Place the resource text values inside of the bar, rather than underneath it.</Karda.XPP.Settings.Sections.Resources.UnderBar.Tooltip>
 
 	<Karda.XPP.Settings.Window.Category>Window Settings</Karda.XPP.Settings.Window.Category>
+	<Karda.XPP.Settings.Window.MaxHeight.Label>Max height multiplier</Karda.XPP.Settings.Window.MaxHeight.Label>
+	<Karda.XPP.Settings.Window.MaxHeight.Tooltip>The multiplier applied to the preview window's maximum height relative to the screen's height.</Karda.XPP.Settings.Window.MaxHeight.Tooltip>
 	<Karda.XPP.Settings.Window.OffsetX.Label>Horizontal window offset</Karda.XPP.Settings.Window.OffsetX.Label>
 	<Karda.XPP.Settings.Window.OffsetY.Label>Vertical window offset</Karda.XPP.Settings.Window.OffsetY.Label>
 	<Karda.XPP.Settings.Window.Offset.Tooltip>Sets the positional offset of the xenotype and preview windows.</Karda.XPP.Settings.Window.Offset.Tooltip>

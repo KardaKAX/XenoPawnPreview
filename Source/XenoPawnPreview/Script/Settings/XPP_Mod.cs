@@ -66,6 +66,8 @@ namespace Karda.XenoPawnPreview
 				XPP_API.Settings.WindowOffset = XPP_Settings.WindowOffsetDefault;
 			}
 
+			XPP_API.Settings.WindowHeightMax = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.MaxHeight.Label".Translate()}: {XPP_API.Settings.WindowHeightMax:F1}x", XPP_API.Settings.WindowHeightMax, 0.5f, 1.0f, tooltip: "Karda.XPP.Settings.Window.MaxHeight.Tooltip".Translate());
+
 			SettingsListing.Label(string.Empty);
 			SettingsListing.Label("Karda.XPP.Settings.Pawn.Category".Translate());
 			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Pawn.Minimal.Label".Translate(), ref XPP_API.Settings.PawnGenerateMinimal, $"{"Karda.XPP.Settings.Pawn.Minimal.Tooltip".Translate()}\n\n{"Karda.XPP.Settings.Pawn.Minimal.Tooltip.2".Translate()}");
