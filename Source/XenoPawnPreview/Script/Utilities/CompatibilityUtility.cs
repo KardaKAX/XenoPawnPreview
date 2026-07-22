@@ -6,7 +6,6 @@ namespace Karda.XenoPawnPreview
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using BigAndSmall;
 	using HarmonyLib;
 	using RimWorld;
 	using UnityEngine;
@@ -22,9 +21,13 @@ namespace Karda.XenoPawnPreview
 		/// </summary>
 		public const string HarmonyCategoryCore = "XPP_Core";
 
+		private static MethodInfo humanoidPawnScalerCache;
+
 		static CompatibilityUtility()
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+			humanoidPawnScalerCache = AccessTools.Method("HumanoidPawnScaler:GetCache");
 
 			BigAndSmall_Assembly = assemblies.FirstOrDefault(x => x.GetName().Name == "BigAndSmall");
 			IdeoFactIcon_Assembly = assemblies.FirstOrDefault(x => x.GetName().Name == "IdeoFactIcon");
@@ -86,8 +89,15 @@ namespace Karda.XenoPawnPreview
 		{
 			if (Find.UIRoot is UIRoot_Entry)
 			{
-				// Reflection is far too laggy for this.
-				__result = HumanoidPawnScaler.GetCache(pawn, true);
+				try
+				{
+					humanoidPawnScalerCache.Invoke(null, new object[] { pawn, true, true, -1, false });
+				}
+				catch (Exception ex)
+				{
+					Log.Error($"[XPP] Failed to invoke method 'HumanoidPawnScaler.GetCache' - Has Big and Small changed the method?\n{ex}");
+				}
+
 				return false;
 			}
 
