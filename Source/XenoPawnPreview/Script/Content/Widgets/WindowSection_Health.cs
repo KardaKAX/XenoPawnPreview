@@ -14,8 +14,6 @@ namespace Karda.XenoPawnPreview
 	/// </summary>
 	public class WindowSection_Health : WindowSection
 	{
-		private float hediffCount;
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="WindowSection_Health"/> class.
 		/// </summary>
@@ -38,8 +36,6 @@ namespace Karda.XenoPawnPreview
 		/// <inheritdoc/>
 		public override void Update()
 		{
-			this.hediffCount = XPP_API.PreviewPawn.health.hediffSet.GetMissingPartsCommonAncestors().Count + XPP_API.PreviewPawn.health.hediffSet.hediffs.Where(x => !(x is Hediff_MissingPart) && x.Visible).Count();
-
 			foreach (var hediff in XPP_API.PreviewPawn.health.hediffSet.hediffs)
 			{
 				XPP_API.PreviewPawn.health.Notify_HediffChanged(hediff);
@@ -151,8 +147,6 @@ namespace Karda.XenoPawnPreview
 			curY += XPP_API.MarginElements;
 
 			Rect hediffRect = new Rect(0f, curY, MinWidth, Text.LineHeight + (XPP_API.PreviewPawn.health.hediffSet.hediffs.Count > 0 ? HediffListingHeight : Text.LineHeight));
-
-			Log.Message($"{XPP_API.PreviewPawn.health.hediffSet.hediffs.Count} {hediffRect.height}");
 
 			try
 			{
