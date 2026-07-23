@@ -146,7 +146,7 @@ namespace Karda.XenoPawnPreview
 
 			curY += XPP_API.MarginElements;
 
-			Rect hediffRect = new Rect(0f, curY, MinWidth, Text.LineHeight + (XPP_API.PreviewPawn.health.hediffSet.hediffs.Count > 0 ? HediffListingHeight : Text.LineHeight));
+			Rect hediffRect = new Rect(0f, curY, MinWidth, Text.LineHeight + (XPP_API.PreviewPawn.health.hediffSet.hediffs.Count > 0 ? Mathf.Clamp(HediffListingHeight, Text.LineHeight, curY) : Text.LineHeight));
 
 			try
 			{
