@@ -95,9 +95,14 @@ namespace Karda.XenoPawnPreview
 		[HarmonyPatch(typeof(Need_Food), "get_MaxLevel")]
 		public static bool NeedFood_GetMaxLevel(ref float __result, Pawn ___pawn)
 		{
-			__result = ___pawn.GetStatValue(StatDefOf.MaxNutrition, true, 15);
+			if (Current.ProgramState == ProgramState.Entry)
+			{
+				__result = ___pawn.GetStatValue(StatDefOf.MaxNutrition, true, 15);
 
-			return false;
+				return false;
+			}
+
+			return true;
 		}
 
 		/// <summary>
