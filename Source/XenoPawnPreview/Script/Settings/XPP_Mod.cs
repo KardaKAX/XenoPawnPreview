@@ -57,31 +57,61 @@ namespace Karda.XenoPawnPreview
 			SettingsListing.Begin(inRect);
 
 			SettingsListing.Label("Karda.XPP.Settings.Window.Category".Translate());
-			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Window.Standalone.Label".Translate(), ref XPP_API.Settings.WindowStandalone, "Karda.XPP.Settings.Window.Standalone.Tooltip".Translate());
-			XPP_API.Settings.WindowOffset.x = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.OffsetX.Label".Translate()}: {XPP_API.Settings.WindowOffset.x:F0}px", XPP_API.Settings.WindowOffset.x, -Screen.width, Screen.width, tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
-			XPP_API.Settings.WindowOffset.y = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.OffsetY.Label".Translate()}: {XPP_API.Settings.WindowOffset.y:F0}px", XPP_API.Settings.WindowOffset.y, -Screen.height, Screen.height, tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
+			SettingsListing.CheckboxLabeled(
+				label: "Karda.XPP.Settings.Window.Standalone.Label".Translate(),
+				checkOn: ref XPP_API.Settings.WindowStandalone,
+				tooltip: "Karda.XPP.Settings.Window.Standalone.Tooltip".Translate());
+			XPP_API.Settings.WindowOffset.x = SettingsListing.SliderLabeled(
+				label: $"{"Karda.XPP.Settings.Window.OffsetX.Label".Translate()}: {XPP_API.Settings.WindowOffset.x:F0}px",
+				val: XPP_API.Settings.WindowOffset.x,
+				min: -Screen.width,
+				max: Screen.width,
+				tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
+			XPP_API.Settings.WindowOffset.y = SettingsListing.SliderLabeled(
+				label: $"{"Karda.XPP.Settings.Window.OffsetY.Label".Translate()}: {XPP_API.Settings.WindowOffset.y:F0}px",
+				val: XPP_API.Settings.WindowOffset.y,
+				min: -Screen.height,
+				max: Screen.height,
+				tooltip: "Karda.XPP.Settings.Window.Offset.Tooltip".Translate());
 
 			if (SettingsListing.ButtonText("Karda.XPP.Generic.Reset.Label".Translate()))
 			{
 				XPP_API.Settings.WindowOffset = XPP_Settings.WindowOffsetDefault;
 			}
 
-			XPP_API.Settings.WindowHeightMax = SettingsListing.SliderLabeled($"{"Karda.XPP.Settings.Window.MaxHeight.Label".Translate()}: {XPP_API.Settings.WindowHeightMax:F1}x", XPP_API.Settings.WindowHeightMax, 0.5f, 1.0f, tooltip: "Karda.XPP.Settings.Window.MaxHeight.Tooltip".Translate());
+			XPP_API.Settings.WindowHeightMax = SettingsListing.SliderLabeled(
+				label: $"{"Karda.XPP.Settings.Window.MaxHeight.Label".Translate()}: {XPP_API.Settings.WindowHeightMax:F2}x",
+				val: XPP_API.Settings.WindowHeightMax,
+				min: 0.5f,
+				max: 1.0f,
+				tooltip: "Karda.XPP.Settings.Window.MaxHeight.Tooltip".Translate());
 
 			SettingsListing.Label(string.Empty);
 			SettingsListing.Label("Karda.XPP.Settings.Pawn.Category".Translate());
-			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Pawn.Minimal.Label".Translate(), ref XPP_API.Settings.PawnGenerateMinimal, $"{"Karda.XPP.Settings.Pawn.Minimal.Tooltip".Translate()}\n\n{"Karda.XPP.Settings.Pawn.Minimal.Tooltip.2".Translate()}");
+			SettingsListing.CheckboxLabeled(
+				label: "Karda.XPP.Settings.Pawn.Minimal.Label".Translate(),
+				checkOn: ref XPP_API.Settings.PawnGenerateMinimal,
+				tooltip: $"{"Karda.XPP.Settings.Pawn.Minimal.Tooltip".Translate()}\n\n{"Karda.XPP.Settings.Pawn.Minimal.Tooltip.2".Translate()}");
 
 			SettingsListing.Label(string.Empty);
 			SettingsListing.Label("Karda.XPP.Settings.Sections.Category".Translate());
-			SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Sections.Resources.UnderBar.Label".Translate(), ref XPP_API.Settings.ResourceValuesCompact, "Karda.XPP.Settings.Sections.Resources.UnderBar.Tooltip".Translate());
+			SettingsListing.CheckboxLabeled(
+				label: "Karda.XPP.Settings.Sections.Resources.UnderBar.Label".Translate(),
+				checkOn: ref XPP_API.Settings.ResourceValuesCompact,
+				tooltip: "Karda.XPP.Settings.Sections.Resources.UnderBar.Tooltip".Translate());
 
 			if (Prefs.DevMode)
 			{
 				SettingsListing.Label(string.Empty);
 				SettingsListing.Label("Karda.XPP.Settings.Patch.Category".Translate());
-				SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.BigAndSmall.Label".Translate(), ref XPP_API.Settings.PatchBigAndSmall, "Karda.XPP.Settings.Patch.BigAndSmall.Tooltip".Translate());
-				SettingsListing.CheckboxLabeled("Karda.XPP.Settings.Patch.IdeoFactIcon.Label".Translate(), ref XPP_API.Settings.PatchIdeoFactIcon, "Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip".Translate());
+				SettingsListing.CheckboxLabeled(
+					label: "Karda.XPP.Settings.Patch.BigAndSmall.Label".Translate(),
+					checkOn: ref XPP_API.Settings.PatchBigAndSmall,
+					tooltip: "Karda.XPP.Settings.Patch.BigAndSmall.Tooltip".Translate());
+				SettingsListing.CheckboxLabeled(
+					label: "Karda.XPP.Settings.Patch.IdeoFactIcon.Label".Translate(),
+					checkOn: ref XPP_API.Settings.PatchIdeoFactIcon,
+					tooltip: "Karda.XPP.Settings.Patch.IdeoFactIcon.Tooltip".Translate());
 			}
 
 			SettingsListing.End();

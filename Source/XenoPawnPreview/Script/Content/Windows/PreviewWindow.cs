@@ -69,7 +69,7 @@ namespace Karda.XenoPawnPreview
 		/// <summary>
 		/// Gets the maximum height of this window, in pixels.
 		/// </summary>
-		public float MaxHeight { get => Screen.height * XPP_API.Settings.WindowHeightMax; }
+		public float MaxHeight { get => Screen.height * (1f / Prefs.UIScale) * XPP_API.Settings.WindowHeightMax; }
 
 		/// <summary>
 		/// Gets the pixel margin to the edge of the screen.
