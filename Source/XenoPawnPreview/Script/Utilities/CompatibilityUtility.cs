@@ -29,8 +29,25 @@ namespace Karda.XenoPawnPreview
 
 			humanoidPawnScalerCache = AccessTools.Method("HumanoidPawnScaler:GetCache");
 
-			BigAndSmall_Assembly = assemblies.FirstOrDefault(x => x.GetName().Name == "BigAndSmall");
-			IdeoFactIcon_Assembly = assemblies.FirstOrDefault(x => x.GetName().Name == "IdeoFactIcon");
+			foreach (Assembly assembly in assemblies)
+			{
+				string assemblyName = assembly.GetName().Name;
+
+				if (assemblyName == "BigAndSmall")
+				{
+					BigAndSmall_Assembly = assembly;
+				}
+
+				if (assemblyName == "IdeoFactIcon")
+				{
+					IdeoFactIcon_Assembly = assembly;
+				}
+
+				if (assemblyName == "VFETribals")
+				{
+					VFETribals_Assembly = assembly;
+				}
+			}
 		}
 
 		/// <summary>
@@ -80,6 +97,11 @@ namespace Karda.XenoPawnPreview
 		public static Assembly IdeoFactIcon_Assembly { get; }
 
 		/// <summary>
+		/// Gets the mod assembly for <b>Vanilla Factions Expanded - Tribals</b>.
+		/// </summary>
+		public static Assembly VFETribals_Assembly { get; }
+
+		/// <summary>
 		/// Defines a <see cref="HarmonyPrefix"/> patch for Big and Small's 'GetInvalidateLater' method, allowing it to cache pawns on the main menu.
 		/// </summary>
 		/// <param name="__result">The original result of the targeted method.</param>
@@ -105,11 +127,12 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <summary>
-		/// Defines a <see cref="HarmonyPrefix"/> patch for <b>Ideoligion Icon as Faction Icon</b>'s 'Get_FactionIcon_Helper' methor, bypassing the cache query if we're on the main menu.
+		/// Defines a <see cref="HarmonyPrefix"/> patch for <b>Ideoligion Icon as Faction Icon</b>'s 'Get_FactionIcon_Helper' method, bypassing the cache query if we're on the main menu.
 		/// </summary>
 		/// <param name="__result">The original result of the targeted method.</param>
 		/// <param name="faction">The <see cref="Faction"/> target of this method.</param>
 		/// <returns><see langword="true"/> if the original method is to be executed.</returns>
+		[HarmonyAfter("nuff.rimworld.ideology_faction_icon")]
 		public static bool IdeoFactIcon_SkipComponentQuery(ref Texture2D __result, Faction faction)
 		{
 			if (Find.UIRoot is UIRoot_Entry)
@@ -120,6 +143,14 @@ namespace Karda.XenoPawnPreview
 
 			return true;
 		}
+
+		/// <summary>
+		/// Defines a <see cref="HarmonyPrefix"/> patch for <b>Vanilla Factions Expanded - Tribals</b>' 'DisableWorkTypes' method, skipping the patch if it's targeting the preview pawn.
+		/// </summary>
+		/// <param name="targetPawn">The <see cref="Pawn"/> being queried for skill availability.</param>
+		/// <returns><see langword="true"/> if the original method is to be executed.</returns>
+		[HarmonyAfter("VFETribalsMod")]
+		public static bool VFETribals_DisableWorkTypes([HarmonyArgument(0)] Pawn targetPawn) => targetPawn != XPP_API.PreviewPawn;
 
 		/// <summary>
 		/// Gets the genes of the given <paramref name="pawn"/>.
@@ -238,6 +269,13 @@ namespace Karda.XenoPawnPreview
 				harmony.Patch(
 					original: AccessTools.Method(IdeoFactIcon_Assembly.GetType("nuff.Ideology_Faction_Icon.HarmonyPatches"), "Get_FactionIcon_Helper"),
 					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(IdeoFactIcon_SkipComponentQuery)));
+			}
+
+			if (VFETribals_Assembly != null)
+			{
+				harmony.Patch(
+					original: AccessTools.Method(VFETribals_Assembly.GetType("VFETribals.Pawn_GetDisabledWorkTypes_FillList_Patch"), "DisableWorkTypes"),
+					prefix: new HarmonyMethod(typeof(CompatibilityUtility), nameof(VFETribals_DisableWorkTypes)));
 			}
 		}
 	}
