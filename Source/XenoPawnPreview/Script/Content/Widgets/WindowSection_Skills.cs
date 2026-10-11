@@ -13,6 +13,11 @@ namespace Karda.XenoPawnPreview
 	public class WindowSection_Skills : WindowSection
 	{
 		/// <summary>
+		/// The offset Rimworld applies to each skill row.
+		/// </summary>
+		public const float SkillOffsetY = 27f;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="WindowSection_Skills"/> class.
 		/// </summary>
 		public WindowSection_Skills()
@@ -21,7 +26,7 @@ namespace Karda.XenoPawnPreview
 		}
 
 		/// <inheritdoc/>
-		public override Vector2 DesiredContentSize => new Vector2(MinWidth, (Text.LineHeight * DefDatabase<SkillDef>.AllDefsListForReading.Count) + ((XPP_API.MarginElements / 2f) * Math.Max(0, DefDatabase<SkillDef>.AllDefsListForReading.Count - 1)));
+		public override Vector2 DesiredContentSize => new Vector2(MinWidth, SkillOffsetY * DefDatabase<SkillDef>.AllDefsListForReading.Count);
 
 		/// <inheritdoc/>
 		public override string Title => "Skills".Translate();
